@@ -95,6 +95,11 @@ const Login = () => {
           >
             Esqueceu sua senha?
           </button>
+
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            Não tem uma conta?{" "}
+            <Link to="/signup" className="text-primary hover:underline">Criar conta</Link>
+          </p>
         </div>
       </div>
     </div>

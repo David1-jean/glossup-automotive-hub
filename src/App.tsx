@@ -3,8 +3,12 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Propostas from "./pages/Propostas";
 import Protocolos from "./pages/Protocolos";
@@ -25,22 +29,26 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/propostas" element={<Propostas />} />
-            <Route path="/protocolos" element={<Protocolos />} />
-            <Route path="/clientes" element={<Clientes />} />
-            <Route path="/veiculos" element={<Veiculos />} />
-            <Route path="/agenda" element={<Agenda />} />
-            <Route path="/financeiro" element={<Financeiro />} />
-            <Route path="/estoque" element={<Estoque />} />
-            <Route path="/relatorios" element={<Relatorios />} />
-            <Route path="/configuracoes" element={<Configuracoes />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/propostas" element={<Propostas />} />
+              <Route path="/protocolos" element={<Protocolos />} />
+              <Route path="/clientes" element={<Clientes />} />
+              <Route path="/veiculos" element={<Veiculos />} />
+              <Route path="/agenda" element={<Agenda />} />
+              <Route path="/financeiro" element={<Financeiro />} />
+              <Route path="/estoque" element={<Estoque />} />
+              <Route path="/relatorios" element={<Relatorios />} />
+              <Route path="/configuracoes" element={<Configuracoes />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

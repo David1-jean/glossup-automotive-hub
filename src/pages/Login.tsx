@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,6 +95,11 @@ const Login = () => {
           >
             Esqueceu sua senha?
           </button>
+
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            Não tem uma conta?{" "}
+            <Link to="/signup" className="text-primary hover:underline">Criar conta</Link>
+          </p>
         </div>
       </div>
     </div>

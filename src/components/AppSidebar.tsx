@@ -1,15 +1,16 @@
 import {
   LayoutDashboard, FileText, ClipboardList, Users, Car, Calendar,
-  DollarSign, Package, BarChart3, Settings, Shield, LogOut,
+  DollarSign, Package, BarChart3, Settings, LogOut, Shield,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Badge } from "@/components/ui/badge";
 import glosshubLogo from "@/assets/glosshub-logo.png";
 
 const menuItems = [
@@ -25,16 +26,24 @@ const menuItems = [
   { title: "Configurações", url: "/configuracoes", icon: Settings },
 ];
 
+const roleLabels: Record<string, string> = {
+  admin_master: "Admin Master",
+  gerente: "Gerente",
+  consultor: "Consultor",
+};
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const location = useLocation();
   const navigate = useNavigate();
+  const { signOut, profile, roles } = useAuth();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     navigate("/login");
   };
+
+  const primaryRole = roles[0];
 
   return (
     <Sidebar collapsible="icon">
@@ -47,6 +56,17 @@ export function AppSidebar() {
           )}
         </div>
 
+        {!collapsed && profile && (
+          <div className="px-4 py-3 border-b border-border">
+            <p className="text-sm font-medium text-foreground truncate">{profile.full_name || profile.email}</p>
+            {primaryRole && (
+              <Badge variant="outline" className="mt-1 text-xs border-primary/50 text-primary">
+                {roleLabels[primaryRole] || primaryRole}
+              </Badge>
+            )}
+          </div>
+        )}
+
         <SidebarGroup className="flex-1">
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -54,12 +74,7 @@ export function AppSidebar() {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/"}
-                      className="hover:bg-sidebar-accent"
-                      activeClassName="bg-primary/10 text-primary font-medium"
-                    >
+                    <NavLink to={item.url} end={item.url === "/"} className="hover:bg-sidebar-accent" activeClassName="bg-primary/10 text-primary font-medium">
                       <item.icon className="mr-2 h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>

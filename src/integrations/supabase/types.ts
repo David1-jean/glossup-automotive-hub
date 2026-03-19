@@ -16,37 +16,52 @@ export type Database = {
     Tables: {
       oficinas: {
         Row: {
+          ativa: boolean
+          cnpj: string | null
           created_at: string
+          data_inicio: string | null
           data_vencimento: string | null
           email: string | null
           endereco: string | null
           id: string
           nome: string
+          plano: string
           status_assinatura: string
           telefone: string | null
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
+          ativa?: boolean
+          cnpj?: string | null
           created_at?: string
+          data_inicio?: string | null
           data_vencimento?: string | null
           email?: string | null
           endereco?: string | null
           id?: string
           nome: string
+          plano?: string
           status_assinatura?: string
           telefone?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
+          ativa?: boolean
+          cnpj?: string | null
           created_at?: string
+          data_inicio?: string | null
           data_vencimento?: string | null
           email?: string | null
           endereco?: string | null
           id?: string
           nome?: string
+          plano?: string
           status_assinatura?: string
           telefone?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }

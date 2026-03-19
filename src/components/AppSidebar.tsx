@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, FileText, ClipboardList, Users, Car, Calendar,
-  DollarSign, Package, BarChart3, Settings, LogOut, Shield,
+  DollarSign, Package, BarChart3, Settings, LogOut, Shield, Crown,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -84,6 +84,24 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {roles.includes("admin_master") && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administração</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink to="/admin" className="hover:bg-sidebar-accent" activeClassName="bg-primary/10 text-primary font-medium">
+                      <Crown className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Painel Master</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         <div className="p-2 border-t border-border">
           <SidebarMenu>

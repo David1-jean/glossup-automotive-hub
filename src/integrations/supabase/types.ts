@@ -14,6 +14,276 @@ export type Database = {
   }
   public: {
     Tables: {
+      agendamentos: {
+        Row: {
+          cliente_id: string | null
+          created_at: string
+          data: string
+          hora: string | null
+          id: string
+          observacoes: string | null
+          oficina_id: string
+          servico: string | null
+          updated_at: string
+          veiculo_id: string | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string
+          data: string
+          hora?: string | null
+          id?: string
+          observacoes?: string | null
+          oficina_id: string
+          servico?: string | null
+          updated_at?: string
+          veiculo_id?: string | null
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string
+          data?: string
+          hora?: string | null
+          id?: string
+          observacoes?: string | null
+          oficina_id?: string
+          servico?: string | null
+          updated_at?: string
+          veiculo_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_oficina_id_fkey"
+            columns: ["oficina_id"]
+            isOneToOne: false
+            referencedRelation: "oficinas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_veiculo_id_fkey"
+            columns: ["veiculo_id"]
+            isOneToOne: false
+            referencedRelation: "veiculos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clientes: {
+        Row: {
+          bairro: string | null
+          cep: string | null
+          cidade: string | null
+          cnpj: string | null
+          cpf: string | null
+          created_at: string
+          data_nascimento: string | null
+          email: string | null
+          id: string
+          nome: string
+          numero: string | null
+          observacoes: string | null
+          oficina_id: string
+          origem: string | null
+          rg: string | null
+          rua: string | null
+          telefone: string | null
+          tipo_pessoa: string | null
+          uf: string | null
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          cnpj?: string | null
+          cpf?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          email?: string | null
+          id?: string
+          nome: string
+          numero?: string | null
+          observacoes?: string | null
+          oficina_id: string
+          origem?: string | null
+          rg?: string | null
+          rua?: string | null
+          telefone?: string | null
+          tipo_pessoa?: string | null
+          uf?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          cnpj?: string | null
+          cpf?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          email?: string | null
+          id?: string
+          nome?: string
+          numero?: string | null
+          observacoes?: string | null
+          oficina_id?: string
+          origem?: string | null
+          rg?: string | null
+          rua?: string | null
+          telefone?: string | null
+          tipo_pessoa?: string | null
+          uf?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clientes_oficina_id_fkey"
+            columns: ["oficina_id"]
+            isOneToOne: false
+            referencedRelation: "oficinas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estoque: {
+        Row: {
+          codigo: string | null
+          created_at: string
+          id: string
+          nome: string
+          oficina_id: string
+          quantidade: number
+          quantidade_minima: number | null
+          updated_at: string
+          valor_unitario: number | null
+        }
+        Insert: {
+          codigo?: string | null
+          created_at?: string
+          id?: string
+          nome: string
+          oficina_id: string
+          quantidade?: number
+          quantidade_minima?: number | null
+          updated_at?: string
+          valor_unitario?: number | null
+        }
+        Update: {
+          codigo?: string | null
+          created_at?: string
+          id?: string
+          nome?: string
+          oficina_id?: string
+          quantidade?: number
+          quantidade_minima?: number | null
+          updated_at?: string
+          valor_unitario?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estoque_oficina_id_fkey"
+            columns: ["oficina_id"]
+            isOneToOne: false
+            referencedRelation: "oficinas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro: {
+        Row: {
+          categoria: string | null
+          created_at: string
+          data: string
+          descricao: string
+          id: string
+          oficina_id: string
+          tipo: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          categoria?: string | null
+          created_at?: string
+          data?: string
+          descricao: string
+          id?: string
+          oficina_id: string
+          tipo?: string
+          updated_at?: string
+          valor?: number
+        }
+        Update: {
+          categoria?: string | null
+          created_at?: string
+          data?: string
+          descricao?: string
+          id?: string
+          oficina_id?: string
+          tipo?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_oficina_id_fkey"
+            columns: ["oficina_id"]
+            isOneToOne: false
+            referencedRelation: "oficinas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      itens_proposta: {
+        Row: {
+          created_at: string
+          descricao: string
+          horas: number | null
+          id: string
+          proposta_id: string
+          quantidade: number | null
+          tipo: string
+          valor: number | null
+        }
+        Insert: {
+          created_at?: string
+          descricao: string
+          horas?: number | null
+          id?: string
+          proposta_id: string
+          quantidade?: number | null
+          tipo?: string
+          valor?: number | null
+        }
+        Update: {
+          created_at?: string
+          descricao?: string
+          horas?: number | null
+          id?: string
+          proposta_id?: string
+          quantidade?: number | null
+          tipo?: string
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "itens_proposta_proposta_id_fkey"
+            columns: ["proposta_id"]
+            isOneToOne: false
+            referencedRelation: "propostas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       oficinas: {
         Row: {
           ativa: boolean
@@ -103,6 +373,179 @@ export type Database = {
           },
         ]
       }
+      propostas: {
+        Row: {
+          cliente_id: string | null
+          consultor_id: string | null
+          created_at: string
+          id: string
+          observacoes: string | null
+          oficina_id: string
+          status: string
+          total: number | null
+          updated_at: string
+          veiculo_id: string | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          consultor_id?: string | null
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          oficina_id: string
+          status?: string
+          total?: number | null
+          updated_at?: string
+          veiculo_id?: string | null
+        }
+        Update: {
+          cliente_id?: string | null
+          consultor_id?: string | null
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          oficina_id?: string
+          status?: string
+          total?: number | null
+          updated_at?: string
+          veiculo_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "propostas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_consultor_id_fkey"
+            columns: ["consultor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_oficina_id_fkey"
+            columns: ["oficina_id"]
+            isOneToOne: false
+            referencedRelation: "oficinas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_veiculo_id_fkey"
+            columns: ["veiculo_id"]
+            isOneToOne: false
+            referencedRelation: "veiculos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocolos: {
+        Row: {
+          cliente_id: string | null
+          created_at: string
+          data_entrada: string | null
+          forma_pagamento: string | null
+          hora_entrada: string | null
+          id: string
+          km: string | null
+          observacoes: string | null
+          oficina_id: string
+          previsao_entrega: string | null
+          status: string
+          status_assinatura: string
+          updated_at: string
+          veiculo_id: string | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string
+          data_entrada?: string | null
+          forma_pagamento?: string | null
+          hora_entrada?: string | null
+          id?: string
+          km?: string | null
+          observacoes?: string | null
+          oficina_id: string
+          previsao_entrega?: string | null
+          status?: string
+          status_assinatura?: string
+          updated_at?: string
+          veiculo_id?: string | null
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string
+          data_entrada?: string | null
+          forma_pagamento?: string | null
+          hora_entrada?: string | null
+          id?: string
+          km?: string | null
+          observacoes?: string | null
+          oficina_id?: string
+          previsao_entrega?: string | null
+          status?: string
+          status_assinatura?: string
+          updated_at?: string
+          veiculo_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocolos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "protocolos_oficina_id_fkey"
+            columns: ["oficina_id"]
+            isOneToOne: false
+            referencedRelation: "oficinas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "protocolos_veiculo_id_fkey"
+            columns: ["veiculo_id"]
+            isOneToOne: false
+            referencedRelation: "veiculos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      servicos: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          oficina_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          oficina_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          oficina_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "servicos_oficina_id_fkey"
+            columns: ["oficina_id"]
+            isOneToOne: false
+            referencedRelation: "oficinas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -120,6 +563,113 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      valor_hora: {
+        Row: {
+          categoria: string
+          created_at: string
+          id: string
+          oficina_id: string
+          ordem: number | null
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          id?: string
+          oficina_id: string
+          ordem?: number | null
+          updated_at?: string
+          valor?: number
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          id?: string
+          oficina_id?: string
+          ordem?: number | null
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valor_hora_oficina_id_fkey"
+            columns: ["oficina_id"]
+            isOneToOne: false
+            referencedRelation: "oficinas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      veiculos: {
+        Row: {
+          ano_fabricacao: number | null
+          ano_modelo: number | null
+          chassi: string | null
+          cliente_id: string | null
+          combustivel: string | null
+          cor: string | null
+          created_at: string
+          id: string
+          marca: string | null
+          modelo: string | null
+          motor: string | null
+          observacoes: string | null
+          oficina_id: string
+          placa: string | null
+          updated_at: string
+        }
+        Insert: {
+          ano_fabricacao?: number | null
+          ano_modelo?: number | null
+          chassi?: string | null
+          cliente_id?: string | null
+          combustivel?: string | null
+          cor?: string | null
+          created_at?: string
+          id?: string
+          marca?: string | null
+          modelo?: string | null
+          motor?: string | null
+          observacoes?: string | null
+          oficina_id: string
+          placa?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ano_fabricacao?: number | null
+          ano_modelo?: number | null
+          chassi?: string | null
+          cliente_id?: string | null
+          combustivel?: string | null
+          cor?: string | null
+          created_at?: string
+          id?: string
+          marca?: string | null
+          modelo?: string | null
+          motor?: string | null
+          observacoes?: string | null
+          oficina_id?: string
+          placa?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "veiculos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "veiculos_oficina_id_fkey"
+            columns: ["oficina_id"]
+            isOneToOne: false
+            referencedRelation: "oficinas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

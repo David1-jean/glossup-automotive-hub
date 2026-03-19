@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, FileText, ClipboardList, Users, Car, Calendar,
-  DollarSign, Package, BarChart3, Settings, LogOut, Shield,
+  DollarSign, Package, BarChart3, Settings, LogOut, Shield, Crown,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";

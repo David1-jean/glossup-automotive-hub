@@ -17,12 +17,34 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error(error.message);
-    } else {
-      navigate("/");
+      setLoading(false);
+      return;
     }
+
+    // Check if user's oficina is active
+    if (authData.user) {
+      const { data: profile } = await supabase.from("profiles").select("oficina_id").eq("id", authData.user.id).single();
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", authData.user.id);
+      const isAdmin = roles?.some(r => r.role === "admin_master");
+
+      if (!isAdmin && profile?.oficina_id) {
+        const { data: oficina } = await supabase.from("oficinas").select("status_assinatura, ativa, data_vencimento").eq("id", profile.oficina_id).single();
+        if (oficina) {
+          const expired = oficina.data_vencimento && new Date(oficina.data_vencimento) < new Date();
+          if (!oficina.ativa || oficina.status_assinatura === "inativa" || expired) {
+            await supabase.auth.signOut();
+            toast.error("Sua assinatura está inativa. Entre em contato com o suporte.");
+            setLoading(false);
+            return;
+          }
+        }
+      }
+    }
+
+    navigate("/");
     setLoading(false);
   };
 

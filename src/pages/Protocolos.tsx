@@ -3,63 +3,65 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/StatusBadge";
 import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
-
-interface Protocolo {
-  id: string;
-  oficina_id: string;
-  cliente_id: string | null;
-  veiculo_id: string | null;
-  status: string;
-  status_assinatura: string;
-  data_entrada: string | null;
-  hora_entrada: string | null;
-  km: string | null;
-  previsao_entrega: string | null;
-  forma_pagamento: string | null;
-  observacoes: string | null;
-}
+import { Plus, Search, Pencil, Trash2, FileDown } from "lucide-react";
+import { ProtocoloDetalhesTab } from "@/components/protocolos/ProtocoloDetalhesTab";
+import { ProtocoloAnotacoesTab } from "@/components/protocolos/ProtocoloAnotacoesTab";
+import { ProtocoloLaudoTab, DEFAULT_TERMO } from "@/components/protocolos/ProtocoloLaudoTab";
+import { ProtocoloFunilariaTab } from "@/components/protocolos/ProtocoloFunilariaTab";
+import { ProtocoloServicosTab } from "@/components/protocolos/ProtocoloServicosTab";
+import { ProtocoloPecasTab } from "@/components/protocolos/ProtocoloPecasTab";
 
 const emptyForm = {
-  cliente_id: "",
-  veiculo_id: "",
-  status: "aberta",
-  status_assinatura: "não assinado",
+  cliente_id: "", veiculo_id: "", status: "aberta", status_assinatura: "não assinado",
   data_entrada: new Date().toISOString().split("T")[0],
-  hora_entrada: "",
-  km: "",
-  previsao_entrega: "",
-  forma_pagamento: "",
-  observacoes: "",
+  hora_entrada: new Date().toTimeString().slice(0, 5),
+  km: "", previsao_entrega: "", hora_entrega: "", data_fechamento: "", hora_fechamento: "",
+  forma_pagamento: "", corresponsavel_id: "", relato_cliente: "", obs_os: "", obs_int: "",
+  termo_autorizacao: DEFAULT_TERMO,
 };
 
 const Protocolos = () => {
   const { profile } = useAuth();
-  const [protocolos, setProtocolos] = useState<Protocolo[]>([]);
+  const [protocolos, setProtocolos] = useState<any[]>([]);
   const [clientes, setClientes] = useState<{ id: string; nome: string }[]>([]);
   const [veiculos, setVeiculos] = useState<{ id: string; modelo: string | null; placa: string | null }[]>([]);
+  const [servicosCadastrados, setServicosCadastrados] = useState<{ id: string; nome: string }[]>([]);
+  const [propostas, setPropostas] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<Protocolo | null>(null);
+  const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
 
+  // Sub-entity states
+  const [servicos, setServicos] = useState<any[]>([]);
+  const [pecas, setPecas] = useState<any[]>([]);
+  const [fotos, setFotos] = useState<any[]>([]);
+  const [checklist, setChecklist] = useState<any[]>([]);
+
+  // Import proposta
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [selectedProposta, setSelectedProposta] = useState("");
+
   const fetchData = async () => {
-    const [protRes, cliRes, veicRes] = await Promise.all([
+    const [protRes, cliRes, veicRes, svcRes, propRes] = await Promise.all([
       supabase.from("protocolos").select("*").order("created_at", { ascending: false }),
       supabase.from("clientes").select("id, nome").order("nome"),
       supabase.from("veiculos").select("id, modelo, placa").order("modelo"),
+      supabase.from("servicos").select("id, nome").order("nome"),
+      supabase.from("propostas").select("*, itens_proposta(*)").order("created_at", { ascending: false }),
     ]);
     if (protRes.data) setProtocolos(protRes.data);
     if (cliRes.data) setClientes(cliRes.data);
     if (veicRes.data) setVeiculos(veicRes.data);
+    if (svcRes.data) setServicosCadastrados(svcRes.data);
+    if (propRes.data) setPropostas(propRes.data);
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -77,24 +79,35 @@ const Protocolos = () => {
     return matchSearch && matchStatus;
   });
 
-  const handleOpen = (protocolo?: Protocolo) => {
+  const handleOpen = async (protocolo?: any) => {
     if (protocolo) {
       setEditing(protocolo);
       setForm({
-        cliente_id: protocolo.cliente_id || "",
-        veiculo_id: protocolo.veiculo_id || "",
-        status: protocolo.status,
-        status_assinatura: protocolo.status_assinatura,
-        data_entrada: protocolo.data_entrada || "",
-        hora_entrada: protocolo.hora_entrada || "",
-        km: protocolo.km || "",
-        previsao_entrega: protocolo.previsao_entrega || "",
-        forma_pagamento: protocolo.forma_pagamento || "",
-        observacoes: protocolo.observacoes || "",
+        cliente_id: protocolo.cliente_id || "", veiculo_id: protocolo.veiculo_id || "",
+        status: protocolo.status, status_assinatura: protocolo.status_assinatura,
+        data_entrada: protocolo.data_entrada || "", hora_entrada: protocolo.hora_entrada || "",
+        km: protocolo.km || "", previsao_entrega: protocolo.previsao_entrega || "",
+        hora_entrega: protocolo.hora_entrega || "", data_fechamento: protocolo.data_fechamento || "",
+        hora_fechamento: protocolo.hora_fechamento || "", forma_pagamento: protocolo.forma_pagamento || "",
+        corresponsavel_id: protocolo.corresponsavel_id || "",
+        relato_cliente: protocolo.relato_cliente || "", obs_os: protocolo.obs_os || "",
+        obs_int: protocolo.obs_int || "", termo_autorizacao: protocolo.termo_autorizacao || DEFAULT_TERMO,
       });
+      // Load sub-entities
+      const [svcRes, pecRes, fotoRes, checkRes] = await Promise.all([
+        supabase.from("protocolo_servicos").select("*").eq("protocolo_id", protocolo.id),
+        supabase.from("protocolo_pecas").select("*").eq("protocolo_id", protocolo.id),
+        supabase.from("protocolo_fotos").select("*").eq("protocolo_id", protocolo.id),
+        supabase.from("protocolo_checklist").select("*").eq("protocolo_id", protocolo.id),
+      ]);
+      setServicos(svcRes.data || []);
+      setPecas(pecRes.data || []);
+      setFotos(fotoRes.data || []);
+      setChecklist(checkRes.data || []);
     } else {
       setEditing(null);
-      setForm(emptyForm);
+      setForm({ ...emptyForm, data_entrada: new Date().toISOString().split("T")[0], hora_entrada: new Date().toTimeString().slice(0, 5) });
+      setServicos([]); setPecas([]); setFotos([]); setChecklist([]);
     }
     setDialogOpen(true);
   };
@@ -102,26 +115,64 @@ const Protocolos = () => {
   const handleSave = async () => {
     if (!profile?.oficina_id) { toast.error("Oficina não identificada"); return; }
     setLoading(true);
-    const payload = {
-      oficina_id: profile.oficina_id,
-      cliente_id: form.cliente_id || null,
-      veiculo_id: form.veiculo_id || null,
-      status: form.status,
-      status_assinatura: form.status_assinatura,
-      data_entrada: form.data_entrada || null,
-      hora_entrada: form.hora_entrada || null,
-      km: form.km || null,
-      previsao_entrega: form.previsao_entrega || null,
-      forma_pagamento: form.forma_pagamento || null,
-      observacoes: form.observacoes || null,
+    const payload: any = {
+      oficina_id: profile.oficina_id, cliente_id: form.cliente_id || null,
+      veiculo_id: form.veiculo_id || null, status: form.status,
+      status_assinatura: form.status_assinatura, data_entrada: form.data_entrada || null,
+      hora_entrada: form.hora_entrada || null, km: form.km || null,
+      previsao_entrega: form.previsao_entrega || null, hora_entrega: form.hora_entrega || null,
+      data_fechamento: form.data_fechamento || null, hora_fechamento: form.hora_fechamento || null,
+      forma_pagamento: form.forma_pagamento || null, corresponsavel_id: form.corresponsavel_id || null,
+      relato_cliente: form.relato_cliente || null, obs_os: form.obs_os || null,
+      obs_int: form.obs_int || null, termo_autorizacao: form.termo_autorizacao || null,
+      observacoes: form.relato_cliente || null,
     };
 
-    const { error } = editing
-      ? await supabase.from("protocolos").update(payload).eq("id", editing.id)
-      : await supabase.from("protocolos").insert(payload);
+    let protocoloId = editing?.id;
 
-    if (error) toast.error("Erro ao salvar protocolo");
-    else { toast.success(editing ? "Protocolo atualizado" : "Protocolo criado"); setDialogOpen(false); fetchData(); }
+    if (editing) {
+      const { error } = await supabase.from("protocolos").update(payload).eq("id", editing.id);
+      if (error) { toast.error("Erro ao salvar"); setLoading(false); return; }
+    } else {
+      const { data, error } = await supabase.from("protocolos").insert(payload).select().single();
+      if (error) { toast.error("Erro ao salvar"); setLoading(false); return; }
+      protocoloId = data.id;
+    }
+
+    // Save sub-entities: delete + re-insert
+    await Promise.all([
+      supabase.from("protocolo_servicos").delete().eq("protocolo_id", protocoloId),
+      supabase.from("protocolo_pecas").delete().eq("protocolo_id", protocoloId),
+      supabase.from("protocolo_fotos").delete().eq("protocolo_id", protocoloId),
+      supabase.from("protocolo_checklist").delete().eq("protocolo_id", protocoloId),
+    ]);
+
+    const inserts = [];
+    if (servicos.length > 0) {
+      inserts.push(supabase.from("protocolo_servicos").insert(
+        servicos.map((s) => ({ protocolo_id: protocoloId, servico_id: s.servico_id || null, nome: s.nome, tipo: s.tipo, tamanho: s.tamanho || null, adicional_sem_pintura: s.adicional_sem_pintura || 0, hora_linear: s.hora_linear || false, horas: s.horas || 0, valor: s.valor || 0 }))
+      ));
+    }
+    if (pecas.length > 0) {
+      inserts.push(supabase.from("protocolo_pecas").insert(
+        pecas.map((p) => ({ protocolo_id: protocoloId, nome: p.nome, fracao: p.fracao, qtd_tinta_p: p.qtd_tinta_p, qtd_tinta_m: p.qtd_tinta_m, qtd_tinta_g: p.qtd_tinta_g, qtd_verniz_p: p.qtd_verniz_p, qtd_verniz_m: p.qtd_verniz_m, qtd_verniz_g: p.qtd_verniz_g, sinonimos: p.sinonimos, imagem_url: p.imagem_url, valor: p.valor || 0 }))
+      ));
+    }
+    if (fotos.length > 0) {
+      inserts.push(supabase.from("protocolo_fotos").insert(
+        fotos.map((f) => ({ protocolo_id: protocoloId, url: f.url, peca: f.peca, observacoes: f.observacoes }))
+      ));
+    }
+    if (checklist.length > 0) {
+      inserts.push(supabase.from("protocolo_checklist").insert(
+        checklist.map((c) => ({ protocolo_id: protocoloId, item: c.item, condicao: c.condicao }))
+      ));
+    }
+    await Promise.all(inserts);
+
+    toast.success(editing ? "Protocolo atualizado" : "Protocolo criado");
+    setDialogOpen(false);
+    fetchData();
     setLoading(false);
   };
 
@@ -132,11 +183,30 @@ const Protocolos = () => {
     else { toast.success("Protocolo excluído"); fetchData(); }
   };
 
+  const handleImportProposta = () => {
+    const proposta = propostas.find((p) => p.id === selectedProposta);
+    if (!proposta) return;
+    setForm({ ...form, cliente_id: proposta.cliente_id || "", veiculo_id: proposta.veiculo_id || "" });
+    const importedServicos = (proposta.itens_proposta || [])
+      .filter((it: any) => it.tipo === "servico")
+      .map((it: any) => ({ nome: it.descricao, tipo: "servico", horas: it.horas || 0, valor: it.valor || 0 }));
+    const importedPecas = (proposta.itens_proposta || [])
+      .filter((it: any) => it.tipo === "peca")
+      .map((it: any) => ({
+        nome: it.descricao, fracao: 1, qtd_tinta_p: 0, qtd_tinta_m: 0, qtd_tinta_g: 0,
+        qtd_verniz_p: 0, qtd_verniz_m: 0, qtd_verniz_g: 0, sinonimos: "", imagem_url: "", valor: it.valor || 0,
+      }));
+    setServicos([...servicos, ...importedServicos]);
+    setPecas([...pecas, ...importedPecas]);
+    setImportDialogOpen(false);
+    toast.success("Orçamento importado");
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold">Protocolos de Serviço</h1>
-        <Button onClick={() => handleOpen()}><Plus className="h-4 w-4 mr-2" /> Novo Protocolo</Button>
+        <Button onClick={() => handleOpen()} className="bg-primary hover:bg-primary/90"><Plus className="h-4 w-4 mr-2" /> Novo Protocolo</Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -182,62 +252,71 @@ const Protocolos = () => {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Editar Protocolo" : "Novo Protocolo"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label>Cliente</Label>
-                <Select value={form.cliente_id} onValueChange={(v) => setForm({ ...form, cliente_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>{clientes.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Veículo</Label>
-                <Select value={form.veiculo_id} onValueChange={(v) => setForm({ ...form, veiculo_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>{veiculos.map((v) => <SelectItem key={v.id} value={v.id}>{v.modelo} {v.placa}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div><Label>Data Entrada</Label><Input type="date" value={form.data_entrada} onChange={(e) => setForm({ ...form, data_entrada: e.target.value })} /></div>
-              <div><Label>Hora Entrada</Label><Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} /></div>
-              <div><Label>KM</Label><Input value={form.km} onChange={(e) => setForm({ ...form, km: e.target.value })} /></div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><Label>Previsão de Entrega</Label><Input type="date" value={form.previsao_entrega} onChange={(e) => setForm({ ...form, previsao_entrega: e.target.value })} /></div>
-              <div><Label>Forma de Pagamento</Label><Input value={form.forma_pagamento} onChange={(e) => setForm({ ...form, forma_pagamento: e.target.value })} placeholder="Cartão, PIX, Dinheiro..." /></div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label>Status</Label>
-                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {["aberta", "quitada", "fechada"].map((s) => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Assinatura</Label>
-                <Select value={form.status_assinatura} onValueChange={(v) => setForm({ ...form, status_assinatura: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="não assinado">Não Assinado</SelectItem>
-                    <SelectItem value="assinado">Assinado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div><Label>Observações</Label><Textarea value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} rows={3} /></div>
+
+          <div className="flex justify-end mb-2">
+            <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
+              <FileDown className="h-4 w-4 mr-2" /> Importar Orçamento
+            </Button>
           </div>
+
+          <Tabs defaultValue="detalhes" className="w-full">
+            <TabsList className="w-full flex flex-wrap h-auto gap-1">
+              <TabsTrigger value="detalhes">Detalhes</TabsTrigger>
+              <TabsTrigger value="anotacoes">Anotações</TabsTrigger>
+              <TabsTrigger value="laudo">Laudo/Termo</TabsTrigger>
+              <TabsTrigger value="funilaria">Funilaria/Pintura</TabsTrigger>
+              <TabsTrigger value="servicos">Serviços</TabsTrigger>
+              <TabsTrigger value="pecas">Peças</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="detalhes">
+              <ProtocoloDetalhesTab form={form} setForm={setForm} clientes={clientes} veiculos={veiculos} onNewCliente={() => {}} onNewVeiculo={() => {}} />
+            </TabsContent>
+            <TabsContent value="anotacoes">
+              <ProtocoloAnotacoesTab form={form} setForm={setForm} />
+            </TabsContent>
+            <TabsContent value="laudo">
+              <ProtocoloLaudoTab fotos={fotos} setFotos={setFotos} checklist={checklist} setChecklist={setChecklist} termo={form.termo_autorizacao} setTermo={(t) => setForm({ ...form, termo_autorizacao: t })} protocolo_id={editing?.id} />
+            </TabsContent>
+            <TabsContent value="funilaria">
+              <ProtocoloFunilariaTab servicos={servicos} setServicos={setServicos} servicosCadastrados={servicosCadastrados} />
+            </TabsContent>
+            <TabsContent value="servicos">
+              <ProtocoloServicosTab servicos={servicos} setServicos={setServicos} servicosCadastrados={servicosCadastrados} tipo="servico" />
+            </TabsContent>
+            <TabsContent value="pecas">
+              <ProtocoloPecasTab pecas={pecas} setPecas={setPecas} />
+            </TabsContent>
+          </Tabs>
+
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleSave} disabled={loading}>{loading ? "Salvando..." : "Salvar"}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Proposta Dialog */}
+      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Importar Orçamento</DialogTitle></DialogHeader>
+          <Select value={selectedProposta} onValueChange={setSelectedProposta}>
+            <SelectTrigger><SelectValue placeholder="Selecione uma proposta" /></SelectTrigger>
+            <SelectContent>
+              {propostas.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {getClienteNome(p.cliente_id)} - {getVeiculoLabel(p.veiculo_id)} ({p.status})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setImportDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleImportProposta} disabled={!selectedProposta}>Importar</Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -441,52 +441,259 @@ export type Database = {
           },
         ]
       }
+      protocolo_checklist: {
+        Row: {
+          condicao: string | null
+          created_at: string
+          id: string
+          item: string
+          protocolo_id: string
+        }
+        Insert: {
+          condicao?: string | null
+          created_at?: string
+          id?: string
+          item: string
+          protocolo_id: string
+        }
+        Update: {
+          condicao?: string | null
+          created_at?: string
+          id?: string
+          item?: string
+          protocolo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocolo_checklist_protocolo_id_fkey"
+            columns: ["protocolo_id"]
+            isOneToOne: false
+            referencedRelation: "protocolos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocolo_fotos: {
+        Row: {
+          created_at: string
+          id: string
+          observacoes: string | null
+          peca: string | null
+          protocolo_id: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          peca?: string | null
+          protocolo_id: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          peca?: string | null
+          protocolo_id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocolo_fotos_protocolo_id_fkey"
+            columns: ["protocolo_id"]
+            isOneToOne: false
+            referencedRelation: "protocolos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocolo_pecas: {
+        Row: {
+          created_at: string
+          fracao: number | null
+          id: string
+          imagem_url: string | null
+          nome: string
+          protocolo_id: string
+          qtd_tinta_g: number | null
+          qtd_tinta_m: number | null
+          qtd_tinta_p: number | null
+          qtd_verniz_g: number | null
+          qtd_verniz_m: number | null
+          qtd_verniz_p: number | null
+          sinonimos: string | null
+          valor: number | null
+        }
+        Insert: {
+          created_at?: string
+          fracao?: number | null
+          id?: string
+          imagem_url?: string | null
+          nome: string
+          protocolo_id: string
+          qtd_tinta_g?: number | null
+          qtd_tinta_m?: number | null
+          qtd_tinta_p?: number | null
+          qtd_verniz_g?: number | null
+          qtd_verniz_m?: number | null
+          qtd_verniz_p?: number | null
+          sinonimos?: string | null
+          valor?: number | null
+        }
+        Update: {
+          created_at?: string
+          fracao?: number | null
+          id?: string
+          imagem_url?: string | null
+          nome?: string
+          protocolo_id?: string
+          qtd_tinta_g?: number | null
+          qtd_tinta_m?: number | null
+          qtd_tinta_p?: number | null
+          qtd_verniz_g?: number | null
+          qtd_verniz_m?: number | null
+          qtd_verniz_p?: number | null
+          sinonimos?: string | null
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocolo_pecas_protocolo_id_fkey"
+            columns: ["protocolo_id"]
+            isOneToOne: false
+            referencedRelation: "protocolos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocolo_servicos: {
+        Row: {
+          adicional_sem_pintura: number | null
+          created_at: string
+          hora_linear: boolean | null
+          horas: number | null
+          id: string
+          nome: string
+          protocolo_id: string
+          servico_id: string | null
+          tamanho: string | null
+          tipo: string
+          valor: number | null
+        }
+        Insert: {
+          adicional_sem_pintura?: number | null
+          created_at?: string
+          hora_linear?: boolean | null
+          horas?: number | null
+          id?: string
+          nome: string
+          protocolo_id: string
+          servico_id?: string | null
+          tamanho?: string | null
+          tipo?: string
+          valor?: number | null
+        }
+        Update: {
+          adicional_sem_pintura?: number | null
+          created_at?: string
+          hora_linear?: boolean | null
+          horas?: number | null
+          id?: string
+          nome?: string
+          protocolo_id?: string
+          servico_id?: string | null
+          tamanho?: string | null
+          tipo?: string
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocolo_servicos_protocolo_id_fkey"
+            columns: ["protocolo_id"]
+            isOneToOne: false
+            referencedRelation: "protocolos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "protocolo_servicos_servico_id_fkey"
+            columns: ["servico_id"]
+            isOneToOne: false
+            referencedRelation: "servicos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       protocolos: {
         Row: {
           cliente_id: string | null
+          corresponsavel_id: string | null
           created_at: string
           data_entrada: string | null
+          data_fechamento: string | null
           forma_pagamento: string | null
           hora_entrada: string | null
+          hora_entrega: string | null
+          hora_fechamento: string | null
           id: string
           km: string | null
+          obs_int: string | null
+          obs_os: string | null
           observacoes: string | null
           oficina_id: string
           previsao_entrega: string | null
+          relato_cliente: string | null
           status: string
           status_assinatura: string
+          termo_autorizacao: string | null
           updated_at: string
           veiculo_id: string | null
         }
         Insert: {
           cliente_id?: string | null
+          corresponsavel_id?: string | null
           created_at?: string
           data_entrada?: string | null
+          data_fechamento?: string | null
           forma_pagamento?: string | null
           hora_entrada?: string | null
+          hora_entrega?: string | null
+          hora_fechamento?: string | null
           id?: string
           km?: string | null
+          obs_int?: string | null
+          obs_os?: string | null
           observacoes?: string | null
           oficina_id: string
           previsao_entrega?: string | null
+          relato_cliente?: string | null
           status?: string
           status_assinatura?: string
+          termo_autorizacao?: string | null
           updated_at?: string
           veiculo_id?: string | null
         }
         Update: {
           cliente_id?: string | null
+          corresponsavel_id?: string | null
           created_at?: string
           data_entrada?: string | null
+          data_fechamento?: string | null
           forma_pagamento?: string | null
           hora_entrada?: string | null
+          hora_entrega?: string | null
+          hora_fechamento?: string | null
           id?: string
           km?: string | null
+          obs_int?: string | null
+          obs_os?: string | null
           observacoes?: string | null
           oficina_id?: string
           previsao_entrega?: string | null
+          relato_cliente?: string | null
           status?: string
           status_assinatura?: string
+          termo_autorizacao?: string | null
           updated_at?: string
           veiculo_id?: string | null
         }
@@ -494,6 +701,13 @@ export type Database = {
           {
             foreignKeyName: "protocolos_cliente_id_fkey"
             columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "protocolos_corresponsavel_id_fkey"
+            columns: ["corresponsavel_id"]
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]

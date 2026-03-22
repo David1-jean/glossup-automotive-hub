@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Building2, CheckCircle, XCircle, DollarSign, Plus, Pencil, Eye } from "lucide-react";
+import { Building2, CheckCircle, XCircle, DollarSign, Plus, Pencil, Eye, Trash2 } from "lucide-react";
 
 interface Oficina {
   id: string;
@@ -55,6 +56,8 @@ const emptyForm: OficinFormData = {
   gerente_nome: "", gerente_email: "", gerente_senha: "",
 };
 
+const OFICINA_PADRAO = "GlossHub Admin";
+
 const statusBadge = (status: string) => {
   const map: Record<string, string> = {
     ativa: "bg-green-500/20 text-green-400 border-green-500/30",
@@ -69,10 +72,13 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedOficina, setSelectedOficina] = useState<Oficina | null>(null);
+  const [oficinaToDelete, setOficinaToDelete] = useState<Oficina | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<OficinFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchOficinas = async () => {
     const { data, error } = await supabase.from("oficinas").select("*").order("created_at", { ascending: false });
@@ -122,6 +128,30 @@ const AdminPanel = () => {
     }
   };
 
+  const handleDeleteClick = (oficina: Oficina) => {
+    if (oficina.nome === OFICINA_PADRAO) {
+      toast.error("A oficina padrão do sistema não pode ser excluída.");
+      return;
+    }
+    setOficinaToDelete(oficina);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!oficinaToDelete) return;
+    setDeleting(true);
+    const { error } = await supabase.from("oficinas").delete().eq("id", oficinaToDelete.id);
+    if (error) {
+      toast.error("Erro ao excluir oficina: " + error.message);
+    } else {
+      toast.success("Oficina excluída com sucesso");
+      fetchOficinas();
+    }
+    setDeleting(false);
+    setDeleteDialogOpen(false);
+    setOficinaToDelete(null);
+  };
+
   const openEdit = (oficina: Oficina) => {
     const parts = (oficina.endereco || "").split(", ");
     setEditingId(oficina.id);
@@ -168,7 +198,6 @@ const AdminPanel = () => {
       if (error) { toast.error("Erro ao criar oficina"); setSaving(false); return; }
       toast.success("Oficina criada");
 
-      // Create gerente user if provided
       if (form.gerente_email && form.gerente_senha && newOficina) {
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: form.gerente_email,
@@ -178,9 +207,7 @@ const AdminPanel = () => {
         if (authError) {
           toast.error("Oficina criada, mas erro ao criar gerente: " + authError.message);
         } else if (authData.user) {
-          // Update profile with oficina_id
           await supabase.from("profiles").update({ oficina_id: newOficina.id }).eq("id", authData.user.id);
-          // Change role to gerente
           await supabase.from("user_roles").update({ role: "gerente" as any }).eq("user_id", authData.user.id);
           toast.success("Gerente criado com sucesso");
         }
@@ -295,6 +322,15 @@ const AdminPanel = () => {
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => { setSelectedOficina(o); setDetailDialogOpen(true); }}>
                           <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteClick(o)}
+                          disabled={o.nome === OFICINA_PADRAO}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </td>
@@ -432,6 +468,28 @@ const AdminPanel = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Oficina</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir a oficina <strong>{oficinaToDelete?.nome}</strong>? Todos os dados serão perdidos permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

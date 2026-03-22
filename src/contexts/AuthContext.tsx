@@ -39,11 +39,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.from("user_roles").select("role").eq("user_id", userId),
     ]);
 
+    const userRoles = rolesRes.data?.map((r: { role: string }) => r.role as AppRole) || [];
+    setRoles(userRoles);
+
     if (profileRes.data) {
-      setProfile(profileRes.data as Profile);
-    }
-    if (rolesRes.data) {
-      setRoles(rolesRes.data.map((r: { role: string }) => r.role as AppRole));
+      const prof = profileRes.data as Profile;
+      // Auto-assign default oficina for admin_master without oficina_id
+      if (!prof.oficina_id && userRoles.includes("admin_master")) {
+        const defaultOficinId = "00000000-0000-0000-0000-000000000001";
+        await supabase.from("profiles").update({ oficina_id: defaultOficinId }).eq("id", userId);
+        prof.oficina_id = defaultOficinId;
+      }
+      setProfile(prof);
     }
   };
 

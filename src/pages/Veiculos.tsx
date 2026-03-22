@@ -54,6 +54,32 @@ const Veiculos = () => {
   const [editing, setEditing] = useState<Veiculo | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
+  const plateDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-lookup by plate
+  useEffect(() => {
+    const clean = form.placa.replace(/[^A-Z0-9]/g, "");
+    if (clean.length !== 7) return;
+    if (plateDebounce.current) clearTimeout(plateDebounce.current);
+    plateDebounce.current = setTimeout(() => {
+      fetch(`https://brasilapi.com.br/api/vehicles/v1/${clean}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data && !data.message) {
+            setForm(f => ({
+              ...f,
+              marca: data.marca || f.marca,
+              modelo: data.modelo || f.modelo,
+              ano_fabricacao: data.ano ? data.ano.toString() : f.ano_fabricacao,
+              ano_modelo: data.anoModelo ? data.anoModelo.toString() : f.ano_modelo,
+            }));
+            toast.success("Dados do veículo preenchidos automaticamente");
+          }
+        })
+        .catch(() => {});
+    }, 300);
+    return () => { if (plateDebounce.current) clearTimeout(plateDebounce.current); };
+  }, [form.placa]);
 
   const fetchData = async () => {
     const [veicRes, cliRes] = await Promise.all([

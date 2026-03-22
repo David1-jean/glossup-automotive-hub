@@ -193,7 +193,28 @@ const Veiculos = () => {
               <div><Label>Modelo *</Label><Input value={form.modelo} onChange={(e) => setForm({ ...form, modelo: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div><Label>Placa</Label><Input value={form.placa} onChange={(e) => setForm({ ...form, placa: e.target.value })} placeholder="ABC-1234" /></div>
+              <div><Label>Placa</Label><Input value={form.placa} onChange={(e) => {
+                const val = e.target.value.toUpperCase();
+                setForm({ ...form, placa: val });
+                const clean = val.replace(/[^A-Z0-9]/g, "");
+                if (clean.length === 7) {
+                  fetch(`https://brasilapi.com.br/api/vehicles/v1/${clean}`)
+                    .then(r => r.json())
+                    .then(data => {
+                      if (data && !data.message) {
+                        setForm(f => ({
+                          ...f,
+                          marca: data.marca || f.marca,
+                          modelo: data.modelo || f.modelo,
+                          ano_fabricacao: data.ano ? data.ano.toString() : f.ano_fabricacao,
+                          ano_modelo: data.anoModelo ? data.anoModelo.toString() : f.ano_modelo,
+                        }));
+                        toast.success("Dados do veículo preenchidos automaticamente");
+                      }
+                    })
+                    .catch(() => {});
+                }
+              }} placeholder="ABC1D23" /></div>
               <div><Label>Ano Fabricação</Label><Input type="number" value={form.ano_fabricacao} onChange={(e) => setForm({ ...form, ano_fabricacao: e.target.value })} /></div>
               <div><Label>Ano Modelo</Label><Input type="number" value={form.ano_modelo} onChange={(e) => setForm({ ...form, ano_modelo: e.target.value })} /></div>
             </div>

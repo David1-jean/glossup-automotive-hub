@@ -44,11 +44,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (profileRes.data) {
       const prof = profileRes.data as Profile;
-      // Auto-assign default oficina for admin_master without oficina_id
-      if (!prof.oficina_id && userRoles.includes("admin_master")) {
-        const defaultOficinId = "00000000-0000-0000-0000-000000000001";
-        await supabase.from("profiles").update({ oficina_id: defaultOficinId }).eq("id", userId);
-        prof.oficina_id = defaultOficinId;
+      if (!prof.oficina_id) {
+        if (userRoles.includes("admin_master")) {
+          // Admin Master → default oficina
+          const defaultOficinaId = "00000000-0000-0000-0000-000000000001";
+          await supabase.from("profiles").update({ oficina_id: defaultOficinaId }).eq("id", userId);
+          prof.oficina_id = defaultOficinaId;
+        } else if (prof.email) {
+          // Try to match by email with an existing oficina
+          const { data: oficina } = await supabase
+            .from("oficinas")
+            .select("id")
+            .eq("email", prof.email)
+            .limit(1)
+            .maybeSingle();
+          if (oficina) {
+            await supabase.from("profiles").update({ oficina_id: oficina.id }).eq("id", userId);
+            prof.oficina_id = oficina.id;
+          }
+        }
       }
       setProfile(prof);
     }

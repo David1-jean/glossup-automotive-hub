@@ -199,16 +199,19 @@ const AdminPanel = () => {
       toast.success("Oficina criada");
 
       if (form.gerente_email && form.gerente_senha && newOficina) {
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: form.gerente_email,
-          password: form.gerente_senha,
-          options: { data: { full_name: form.gerente_nome } },
+        const { data: session } = await supabase.auth.getSession();
+        const res = await supabase.functions.invoke("create-user", {
+          body: {
+            email: form.gerente_email,
+            password: form.gerente_senha,
+            full_name: form.gerente_nome,
+            oficina_id: newOficina.id,
+            role: "gerente",
+          },
         });
-        if (authError) {
-          toast.error("Oficina criada, mas erro ao criar gerente: " + authError.message);
-        } else if (authData.user) {
-          await supabase.from("profiles").update({ oficina_id: newOficina.id }).eq("id", authData.user.id);
-          await supabase.from("user_roles").update({ role: "gerente" as any }).eq("user_id", authData.user.id);
+        if (res.error || res.data?.error) {
+          toast.error("Oficina criada, mas erro ao criar gerente: " + (res.data?.error || res.error?.message));
+        } else {
           toast.success("Gerente criado com sucesso");
         }
       }

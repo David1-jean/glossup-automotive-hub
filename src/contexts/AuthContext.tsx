@@ -33,7 +33,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserData = async (userId: string) => {
+  const fetchUserData = async (currentUser: User) => {
+    const userId = currentUser.id;
+    
     const [profileRes, rolesRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).single(),
       supabase.from("user_roles").select("role").eq("user_id", userId),
@@ -44,41 +46,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (profileRes.data) {
       const prof = profileRes.data as Profile;
+      
       if (!prof.oficina_id && userRoles.includes("admin_master")) {
         const defaultOficinaId = "00000000-0000-0000-0000-000000000001";
         await supabase.from("profiles").update({ oficina_id: defaultOficinaId }).eq("id", userId);
         prof.oficina_id = defaultOficinaId;
+      } else if (!prof.oficina_id && currentUser.user_metadata?.oficina_id) {
+        const metaOficinaId = currentUser.user_metadata.oficina_id;
+        await supabase.from("profiles").update({ oficina_id: metaOficinaId }).eq("id", userId);
+        prof.oficina_id = metaOficinaId;
       }
+      
       setProfile(prof);
+    } else {
+      setProfile(null);
     }
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+    let mounted = true;
 
-        if (session?.user) {
-          setTimeout(() => fetchUserData(session.user.id), 0);
+    const setupSession = async () => {
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+        setSession(initialSession);
+        setUser(initialSession?.user ?? null);
+        
+        if (initialSession?.user) {
+          await fetchUserData(initialSession.user);
         } else {
           setProfile(null);
           setRoles([]);
         }
-        setLoading(false);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    setupSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, currentSession) => {
+        if (!mounted) return;
+        
+        if (_event === 'SIGNED_IN') {
+          setLoading(true);
+        }
+
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+
+        if (currentSession?.user) {
+          await fetchUserData(currentSession.user);
+        } else {
+          setProfile(null);
+          setRoles([]);
+        }
+        
+        if (mounted) setLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserData(session.user.id);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const hasRole = (role: AppRole) => roles.includes(role);

@@ -56,7 +56,7 @@ const emptyForm: OficinFormData = {
   gerente_nome: "", gerente_email: "", gerente_senha: "",
 };
 
-const OFICINA_PADRAO = "GlossHub Admin";
+const OFICINA_PADRAO = "Oficina Admin";
 
 const statusBadge = (status: string) => {
   const map: Record<string, string> = {

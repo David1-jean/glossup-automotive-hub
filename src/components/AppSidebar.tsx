@@ -50,7 +50,7 @@ export function AppSidebar() {
       <SidebarContent className="flex flex-col h-full">
         <div className="p-4 flex items-center justify-center border-b border-border">
           {!collapsed ? (
-            <img src={glosshubLogo} alt="GlossHub" className="h-8 object-contain" />
+            <img src={glosshubLogo} alt="Oficina" className="h-8 object-contain" />
           ) : (
             <span className="text-primary font-bold text-lg">G</span>
           )}

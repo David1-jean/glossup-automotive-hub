@@ -123,7 +123,7 @@ const Dashboard = () => {
     <div className="space-y-8 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Bem-vindo ao GlossHub</p>
+        <p className="text-muted-foreground">Bem-vindo à Oficina</p>
       </div>
 
       {/* Metric cards */}

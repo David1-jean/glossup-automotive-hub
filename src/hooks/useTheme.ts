@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 export function useTheme() {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("glosshub-theme") as "light" | "dark") || "light";
+      return (localStorage.getItem("oficina-theme") as "light" | "dark") || "light";
     }
     return "light";
   });
@@ -15,7 +15,7 @@ export function useTheme() {
     } else {
       root.classList.remove("dark");
     }
-    localStorage.setItem("glosshub-theme", theme);
+    localStorage.setItem("oficina-theme", theme);
   }, [theme]);
 
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));

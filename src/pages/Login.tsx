@@ -74,7 +74,7 @@ const Login = () => {
       <div className="relative z-10 w-full max-w-md mx-4">
         <div className="glass-card p-8 neon-glow animate-fade-in">
           <div className="flex justify-center mb-8">
-            <img src={glosshubLogo} alt="GlossHub" className="h-16 object-contain" />
+            <img src={glosshubLogo} alt="Oficina" className="h-16 object-contain" />
           </div>
 
           <p className="text-center text-muted-foreground mb-8">

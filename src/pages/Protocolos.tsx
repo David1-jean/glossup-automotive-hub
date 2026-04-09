@@ -236,7 +236,7 @@ const Protocolos = () => {
               const totalItems = protocolos.length;
               const originalIndex = protocolos.findIndex(p => p.id === item.id);
               const seqNumber = (totalItems - originalIndex).toString().padStart(4, '0');
-              const codDisplay = `CÓD: ${seqNumber}`;
+              const codDisplay = seqNumber;
 
               return (
               <tr key={item.id} className="border-b border-border/50 hover:bg-secondary/50 transition-colors">

@@ -3,8 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { StatusBadge } from "@/components/StatusBadge";
-import { Search, Download } from "lucide-react";
+import { Search, Download, FileText } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -37,15 +36,12 @@ const Relatorios = () => {
     fetchAll();
   }, []);
 
-  const getVeiculoLabel = (id: string | null) => {
-    const v = veiculos.find((v) => v.id === id);
-    return v ? `${v.modelo || ""} ${v.placa || ""}`.trim() : "—";
-  };
-
   const rows = useMemo(() => {
     return protocolos
       .filter((p) => {
-        const matchSearch = getVeiculoLabel(p.veiculo_id).toLowerCase().includes(search.toLowerCase());
+        const v = veiculos.find((ve) => ve.id === p.veiculo_id);
+        const vLabel = v ? `${v.modelo || ""} ${v.placa || ""}`.trim() : "";
+        const matchSearch = vLabel.toLowerCase().includes(search.toLowerCase());
         const matchStatus = statusFilter === "Todos" || p.status.toLowerCase() === statusFilter.toLowerCase();
         let matchDate = true;
         if (dataInicio) matchDate = matchDate && (p.data_entrada || "") >= dataInicio;
@@ -68,9 +64,13 @@ const Relatorios = () => {
         const lucroPecas = vendaPecas - custoPecas;
         const totalOS = funilariaValor + servicosValor + vendaPecas;
 
+        const v = veiculos.find((ve) => ve.id === p.veiculo_id);
+
         return {
           id: p.id,
-          veiculo: getVeiculoLabel(p.veiculo_id),
+          veiculo_modelo: v?.modelo || "—",
+          veiculo_placa: v?.placa || "",
+          veiculo_full: v ? `${v.modelo || ""} ${v.placa || ""}`.trim() : "—",
           funilariaValor, funilariaHoras, funilariaPecas,
           servicosValor, servicosHoras,
           vendaPecas, custoPecas, lucroPecas, totalOS,
@@ -99,28 +99,40 @@ const Relatorios = () => {
   }, [rows]);
 
   const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  
+  const getCustomStatusBadge = (status: string) => {
+    const s = status.toLowerCase();
+    if (s === "aberta") return <span className="inline-block px-3 py-1 rounded-md text-xs font-bold text-warning-foreground bg-warning/20 border border-warning/30 uppercase tracking-wider">Aberta</span>;
+    if (s === "fechada") return <span className="inline-block px-3 py-1 rounded-md text-xs font-bold text-blue-700 bg-blue-100 border border-blue-200 shadow-sm uppercase tracking-wider">Fechada</span>;
+    if (s === "quitada") return <span className="inline-block px-3 py-1 rounded-md text-xs font-bold text-success-foreground bg-success/20 border border-success/30 uppercase tracking-wider">Quitada</span>;
+    return <span className="inline-block px-3 py-1 rounded-md text-xs font-bold text-muted-foreground bg-muted border border-border uppercase tracking-wider">{status}</span>;
+  };
 
   const exportPDF = () => {
     const doc = new jsPDF({ orientation: "landscape" });
-    doc.setFontSize(16);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
     doc.text("Relatório de Ordens de Serviço", 14, 15);
     doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
     doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")}`, 14, 22);
 
     autoTable(doc, {
       startY: 28,
-      head: [["OS", "Veículo", "Fun/Pint (R$)", "Hrs Fun", "Peças Pint", "Serviços (R$)", "Hrs Svc", "Venda Peças", "Custo Peças", "Lucro Peças", "Total OS", "Status", "Previsão"]],
+      head: [["OS", "Veículo", "Fun/Pint", "Hrs Fun", "Peças P.", "Serviços", "Hrs Svc", "Venda P.", "Custo P.", "Lucro", "Total OS", "Status", "Prev."]],
       body: rows.map((r, i) => [
-        i + 1, r.veiculo, fmt(r.funilariaValor), r.funilariaHoras, r.funilariaPecas,
+        String(i + 1).padStart(4, '0'), r.veiculo_full, fmt(r.funilariaValor), r.funilariaHoras, r.funilariaPecas,
         fmt(r.servicosValor), r.servicosHoras, fmt(r.vendaPecas), fmt(r.custoPecas),
         fmt(r.lucroPecas), fmt(r.totalOS), r.status, r.previsao_entrega,
       ]),
       foot: [["TOTAIS", "", fmt(totals.funilariaValor), totals.funilariaHoras, "",
         fmt(totals.servicosValor), totals.servicosHoras, fmt(totals.vendaPecas),
         fmt(totals.custoPecas), fmt(totals.lucroPecas), fmt(totals.totalOS), "", ""]],
-      styles: { fontSize: 7 },
-      headStyles: { fillColor: [255, 107, 0] },
-      footStyles: { fillColor: [255, 107, 0], textColor: [255, 255, 255] },
+      styles: { fontSize: 7, halign: 'right' },
+      columnStyles: { 0: { halign: 'center' }, 1: { halign: 'left' }, 11: { halign: 'center' }, 12: { halign: 'center' } },
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold' },
+      footStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] }
     });
 
     const finalY = (doc as any).lastAutoTable?.finalY || 180;
@@ -133,78 +145,103 @@ const Relatorios = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">Relatórios</h1>
-        <Button onClick={exportPDF} className="bg-primary hover:bg-primary/90"><Download className="h-4 w-4 mr-2" /> Baixar PDF</Button>
+    <div className="space-y-8 animate-fade-in font-sans">
+      {/* Cabeçalho */}
+      <div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-primary/10 rounded-lg">
+              <FileText className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Relatório de Ordens de Serviço</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Data de geração: {new Date().toLocaleDateString("pt-BR", { day: '2-digit', month: 'long', year: 'numeric' })}
+              </p>
+            </div>
+          </div>
+          <Button onClick={exportPDF} size="lg" className="bg-primary hover:bg-primary/90 text-white font-semibold shadow-sm">
+            <Download className="h-4 w-4 mr-2" /> Baixar PDF
+          </Button>
+        </div>
+        <div className="h-px w-full bg-border mt-6"></div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+      {/* Filtros */}
+      <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-center bg-card p-4 rounded-xl border border-border shadow-sm">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Buscar veículo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder="Buscar veículo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-background h-10" />
         </div>
-        <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="w-40" placeholder="Data início" />
-        <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="w-40" placeholder="Data fim" />
+        <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="w-40 bg-background h-10" placeholder="Data início" />
+        <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="w-40 bg-background h-10" placeholder="Data fim" />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-40 h-10 bg-background"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             {["Todos", "Aberta", "Quitada", "Fechada"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
 
-      <div className="glass-card overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              {["OS", "Veículo", "Fun/Pint (R$)", "Hrs", "Peças Pint", "Serviços (R$)", "Hrs Svc", "Venda Peças", "Custo Peças", "Lucro Peças", "Total OS", "Status", "Previsão"].map((h) => (
-                <th key={h} className="text-left p-3 text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={r.id} className="border-b border-border/50 hover:bg-secondary/50 transition-colors">
-                <td className="p-3 text-sm font-mono">{i + 1}</td>
-                <td className="p-3 text-sm whitespace-nowrap">{r.veiculo}</td>
-                <td className="p-3 text-sm font-mono">{fmt(r.funilariaValor)}</td>
-                <td className="p-3 text-sm font-mono">{r.funilariaHoras}</td>
-                <td className="p-3 text-sm font-mono">{r.funilariaPecas}</td>
-                <td className="p-3 text-sm font-mono">{fmt(r.servicosValor)}</td>
-                <td className="p-3 text-sm font-mono">{r.servicosHoras}</td>
-                <td className="p-3 text-sm font-mono">{fmt(r.vendaPecas)}</td>
-                <td className="p-3 text-sm font-mono">{fmt(r.custoPecas)}</td>
-                <td className="p-3 text-sm font-mono">{fmt(r.lucroPecas)}</td>
-                <td className="p-3 text-sm font-mono font-bold">{fmt(r.totalOS)}</td>
-                <td className="p-3"><StatusBadge status={r.status} /></td>
-                <td className="p-3 text-sm">{r.previsao_entrega}</td>
+      {/* Tabela Principal */}
+      <div className="rounded-xl border border-border shadow-sm overflow-hidden bg-card">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-[#1E293B] text-white">
+              <tr>
+                {["OS", "Veículo", "Funilaria/Pint.", "Hrs Fun.", "Peças Pint.", "Serviços", "Hrs Svc", "Venda Peças", "Custo Peças", "Lucro Peças", "Total OS", "Status", "Previsão"].map((h, i) => (
+                  <th key={h} className={`p-4 font-semibold whitespace-nowrap ${(i >= 2 && i <= 10) ? 'text-right' : 'text-left'}`}>{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {rows.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum resultado encontrado</p>}
+            </thead>
+            <tbody className="divide-y divide-border">
+              {rows.map((r, i) => (
+                <tr key={r.id} className="hover:bg-muted/50 transition-colors bg-card even:bg-muted/30">
+                  <td className="p-4 font-mono font-medium text-foreground">{String(i + 1).padStart(4, '0')}</td>
+                  <td className="p-4 whitespace-nowrap">
+                    <p className="font-semibold text-foreground">{r.veiculo_modelo}</p>
+                    {r.veiculo_placa && <p className="text-xs text-muted-foreground mt-0.5">{r.veiculo_placa}</p>}
+                  </td>
+                  <td className="p-4 font-mono text-right">{fmt(r.funilariaValor)}</td>
+                  <td className="p-4 font-mono text-right">{r.funilariaHoras}</td>
+                  <td className="p-4 font-mono text-right">{r.funilariaPecas}</td>
+                  <td className="p-4 font-mono text-right">{fmt(r.servicosValor)}</td>
+                  <td className="p-4 font-mono text-right">{r.servicosHoras}</td>
+                  <td className="p-4 font-mono text-right">{fmt(r.vendaPecas)}</td>
+                  <td className="p-4 font-mono text-right">{fmt(r.custoPecas)}</td>
+                  <td className="p-4 font-mono text-right text-success">{fmt(r.lucroPecas)}</td>
+                  <td className="p-4 font-mono text-right font-bold text-primary text-base">{fmt(r.totalOS)}</td>
+                  <td className="p-4">{getCustomStatusBadge(r.status)}</td>
+                  <td className="p-4 whitespace-nowrap text-muted-foreground">{r.previsao_entrega}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {rows.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">Nenhum resultado encontrado para os filtros.</p>
+          </div>
+        )}
       </div>
 
-      {/* Footer totals */}
-      <div className="glass-card p-4 border-t-2 border-primary">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div>
-            <p className="text-xs text-muted-foreground uppercase">Totais</p>
-            <p className="text-lg font-bold text-primary">{fmt(totals.totalOS)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground uppercase">Qtd Ordens de Serviço</p>
-            <p className="text-lg font-bold">{totals.qtdOS}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground uppercase">Ticket Médio</p>
-            <p className="text-lg font-bold">{fmt(totals.ticketMedio)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground uppercase">% sobre Receita</p>
-            <p className="text-lg font-bold">100%</p>
-          </div>
+      {/* Seção de Resumo (Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+        <div className="bg-card p-6 rounded-xl border border-border shadow-sm flex flex-col items-start hover:shadow-md transition-shadow">
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Total Geral (Receita)</p>
+          <p className="text-3xl font-bold text-primary">{fmt(totals.totalOS)}</p>
+        </div>
+        <div className="bg-card p-6 rounded-xl border border-border shadow-sm flex flex-col items-start hover:shadow-md transition-shadow">
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Ordens de Serviço</p>
+          <p className="text-3xl font-bold text-foreground">{totals.qtdOS}</p>
+        </div>
+        <div className="bg-card p-6 rounded-xl border border-border shadow-sm flex flex-col items-start hover:shadow-md transition-shadow">
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">Ticket Médio</p>
+          <p className="text-3xl font-bold text-foreground">{fmt(totals.ticketMedio)}</p>
+        </div>
+        <div className="bg-card p-6 rounded-xl border border-border shadow-sm flex flex-col items-start border-l-4 border-l-primary hover:shadow-md transition-shadow">
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">% sobre Receita</p>
+          <p className="text-3xl font-bold text-foreground">100%</p>
         </div>
       </div>
     </div>

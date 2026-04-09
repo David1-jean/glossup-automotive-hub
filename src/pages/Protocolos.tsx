@@ -31,6 +31,7 @@ const Protocolos = () => {
   const [clientes, setClientes] = useState<{ id: string; nome: string }[]>([]);
   const [veiculos, setVeiculos] = useState<{ id: string; modelo: string | null; placa: string | null }[]>([]);
   const [servicosCadastrados, setServicosCadastrados] = useState<{ id: string; nome: string; oficina_id: string | null }[]>([]);
+  const [servicosCadastradosError, setServicosCadastradosError] = useState("");
   const [propostas, setPropostas] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
@@ -57,30 +58,39 @@ const Protocolos = () => {
   const [selectedProposta, setSelectedProposta] = useState("");
 
   const fetchData = async () => {
-    if (!profile?.oficina_id) return;
+    if (!profile?.oficina_id) {
+      setServicosCadastrados([]);
+      setServicosCadastradosError("Oficina não identificada para carregar os serviços.");
+      return;
+    }
+
+    setServicosCadastradosError("");
 
     const [protRes, cliRes, veicRes, svcRes, propRes] = await Promise.all([
       supabase.from("protocolos").select("*").order("created_at", { ascending: false }),
       supabase.from("clientes").select("id, nome").order("nome"),
       supabase.from("veiculos").select("id, modelo, placa").order("modelo"),
-      supabase.from("servicos").select("id, nome, oficina_id"),
+      supabase.from("servicos").select("id, nome, oficina_id").or(`oficina_id.is.null,oficina_id.eq.${profile.oficina_id}`),
       supabase.from("propostas").select("*, itens_proposta(*)").order("created_at", { ascending: false }),
     ]);
 
     if (svcRes.error) {
       console.error("[Protocolos] erro ao carregar servicos:", svcRes.error);
-    }
+      setServicosCadastrados([]);
+      setServicosCadastradosError("Erro ao carregar os serviços cadastrados.");
+    } else {
+      const servicosOrdenados = (svcRes.data || []).sort((a, b) => {
+        if (a.oficina_id === null && b.oficina_id !== null) return -1;
+        if (a.oficina_id !== null && b.oficina_id === null) return 1;
+        return a.nome.localeCompare(b.nome, "pt-BR");
+      });
 
-    const servicosOrdenados = (svcRes.data || []).sort((a, b) => {
-      if (a.oficina_id === null && b.oficina_id !== null) return -1;
-      if (a.oficina_id !== null && b.oficina_id === null) return 1;
-      return a.nome.localeCompare(b.nome, "pt-BR");
-    });
+      setServicosCadastrados(servicosOrdenados);
+    }
 
     if (protRes.data) setProtocolos(protRes.data);
     if (cliRes.data) setClientes(cliRes.data);
     if (veicRes.data) setVeiculos(veicRes.data);
-    setServicosCadastrados(servicosOrdenados);
     if (propRes.data) setPropostas(propRes.data);
   };
 
@@ -349,10 +359,10 @@ const Protocolos = () => {
               <ProtocoloLaudoTab fotos={fotos} setFotos={setFotos} checklist={checklist} setChecklist={setChecklist} termo={form.termo_autorizacao} setTermo={(t) => setForm({ ...form, termo_autorizacao: t })} protocolo_id={editing?.id} />
             </TabsContent>
             <TabsContent value="funilaria">
-              <ProtocoloFunilariaTab servicos={servicos} setServicos={setServicos} servicosCadastrados={servicosCadastrados} />
+              <ProtocoloFunilariaTab servicos={servicos} setServicos={setServicos} servicosCadastrados={servicosCadastrados} loadError={servicosCadastradosError} />
             </TabsContent>
             <TabsContent value="servicos">
-              <ProtocoloServicosTab servicos={servicos} setServicos={setServicos} servicosCadastrados={servicosCadastrados} tipo="servico" />
+              <ProtocoloServicosTab servicos={servicos} setServicos={setServicos} servicosCadastrados={servicosCadastrados} tipo="servico" loadError={servicosCadastradosError} />
             </TabsContent>
             <TabsContent value="pecas">
               <ProtocoloPecasTab pecas={pecas} setPecas={setPecas} />

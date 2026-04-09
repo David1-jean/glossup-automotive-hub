@@ -68,7 +68,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const setupSession = async () => {
       try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        console.log("[AuthContext] calling getSession...");
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        console.log("[AuthContext] getSession result:", { session: !!initialSession, error });
         
         if (!mounted) return;
         setSession(initialSession);
@@ -80,6 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile(null);
           setRoles([]);
         }
+      } catch (err) {
+        console.error("[AuthContext] setupSession error:", err);
       } finally {
         if (mounted) setLoading(false);
       }

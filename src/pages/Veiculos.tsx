@@ -138,6 +138,8 @@ const Veiculos = () => {
       setEditing(null);
       setForm(emptyForm);
     }
+    setPlateError("");
+    lastSearchedPlate.current = "";
     setDialogOpen(true);
   };
 

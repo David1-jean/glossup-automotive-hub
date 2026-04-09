@@ -56,10 +56,10 @@ export function AppSidebar() {
         </div>
 
         {!collapsed && profile && (
-          <div className="px-4 py-3 border-b border-border">
+          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <p className="text-white text-[13px] font-medium truncate">{profile.full_name || profile.email}</p>
             {primaryRole && (
-              <Badge variant="outline" className="mt-1 text-xs border-[#FF6B00] text-[#FF6B00]">
+              <Badge variant="outline" className="text-[10px] border-[#FF6B00] text-[#FF6B00] shrink-0 h-5 px-1.5">
                 {roleLabels[primaryRole] || primaryRole}
               </Badge>
             )}

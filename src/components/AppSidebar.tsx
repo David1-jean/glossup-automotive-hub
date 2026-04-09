@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, FileText, ClipboardList, Users, Car, Calendar,
-  DollarSign, Package, BarChart3, Settings, LogOut, Shield, Crown,
+  DollarSign, Package, BarChart3, Settings, LogOut, Crown, Sparkles,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -47,19 +47,44 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent className="flex flex-col h-full">
-        <div className="p-4 flex items-center justify-center border-b border-border">
+        <div className="border-b border-border/70 px-4 py-4">
           {!collapsed ? (
-            <span className="text-[#FF6B00] text-[20px] font-bold">AutoLustre</span>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary ring-1 ring-primary/20">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-sidebar-foreground/55">Glossup</p>
+                  <span className="block truncate text-base font-semibold text-sidebar-foreground">Automotive Hub</span>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-sidebar-border bg-sidebar-accent/60 px-3 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-sidebar-foreground/50">Operacao</p>
+                <p className="mt-1 text-sm font-medium text-sidebar-foreground">ERP da oficina</p>
+                <p className="mt-1 text-xs text-sidebar-foreground/60">Ordens de servico, clientes, estoque e financeiro.</p>
+              </div>
+            </div>
           ) : (
-            <span className="text-[#FF6B00] text-[20px] font-bold">A</span>
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary ring-1 ring-primary/20">
+              <Sparkles className="h-5 w-5" />
+            </div>
           )}
         </div>
 
         {!collapsed && profile && (
-          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-            <p className="text-white text-[13px] font-medium truncate">{profile.full_name || profile.email}</p>
+          <div className="border-b border-border/70 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-foreground">
+                {(profile.full_name || profile.email || "U").slice(0, 1).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-medium text-sidebar-foreground">{profile.full_name || profile.email}</p>
+                <p className="truncate text-[11px] text-sidebar-foreground/55">Acesso autenticado</p>
+              </div>
+            </div>
             {primaryRole && (
-              <Badge variant="outline" className="text-[10px] border-[#FF6B00] text-[#FF6B00] shrink-0 h-5 px-1.5">
+              <Badge variant="outline" className="mt-3 h-6 border-primary/30 bg-primary/10 px-2 text-[10px] text-primary">
                 {roleLabels[primaryRole] || primaryRole}
               </Badge>
             )}
@@ -73,7 +98,7 @@ export function AppSidebar() {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end={item.url === "/"} className="hover:bg-sidebar-accent" activeClassName="bg-primary/10 text-primary font-medium">
+                    <NavLink to={item.url} end={item.url === "/"} className="rounded-xl text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-primary/12 text-primary font-medium shadow-sm ring-1 ring-primary/20">
                       <item.icon className="mr-2 h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -91,7 +116,7 @@ export function AppSidebar() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <NavLink to="/admin" className="hover:bg-sidebar-accent" activeClassName="bg-primary/10 text-primary font-medium">
+                    <NavLink to="/admin" className="rounded-xl text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-primary/12 text-primary font-medium shadow-sm ring-1 ring-primary/20">
                       <Crown className="mr-2 h-4 w-4" />
                       {!collapsed && <span>Painel Master</span>}
                     </NavLink>
@@ -102,10 +127,10 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        <div className="p-2 border-t border-border">
+        <div className="border-t border-border/70 p-2">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={handleLogout} className="hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+              <SidebarMenuButton onClick={handleLogout} className="rounded-xl text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 {!collapsed && <span>Sair</span>}
               </SidebarMenuButton>

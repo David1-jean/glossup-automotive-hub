@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -223,12 +223,12 @@ const Clientes = () => {
 
       <div className="glass-card overflow-x-auto">
         <table className="w-full">
-          <thead>
+          <thead className="bg-[#1E293B] text-white">
             <tr className="border-b border-border">
-              <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase">Nome</th>
-              <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase">Celular</th>
-              <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase">E-mail</th>
-              <th className="text-left p-4 text-xs font-medium text-muted-foreground uppercase">Ações</th>
+              <th className="text-left p-4 text-xs font-semibold uppercase">Nome</th>
+              <th className="text-left p-4 text-xs font-semibold uppercase">Celular</th>
+              <th className="text-left p-4 text-xs font-semibold uppercase">E-mail</th>
+              <th className="text-left p-4 text-xs font-semibold uppercase">Ações</th>
             </tr>
           </thead>
           <tbody>

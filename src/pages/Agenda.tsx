@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -127,10 +127,10 @@ const Agenda = () => {
 
       <div className="glass-card overflow-x-auto">
         <table className="w-full">
-          <thead>
+          <thead className="bg-[#1E293B] text-white">
             <tr className="border-b border-border">
               {["Data", "Hora", "Cliente", "Veículo", "Serviço", "Ações"].map((h) => (
-                <th key={h} className="text-left p-4 text-xs font-medium text-muted-foreground uppercase">{h}</th>
+                <th key={h} className="text-left p-4 text-xs font-semibold uppercase">{h}</th>
               ))}
             </tr>
           </thead>

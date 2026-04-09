@@ -39,7 +39,7 @@ export function AppLayout() {
             <Button variant="ghost" size="icon" onClick={toggleTheme} className="mr-2">
               {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5 text-warning" />}
             </Button>
-            <span className="text-sm font-medium text-white">
+            <span className="text-sm font-medium text-foreground dark:text-white">
               {oficina?.nome_fantasia || "Oficina"}
             </span>
           </header>

@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import workshopBg from "@/assets/workshop-bg.jpg";
-import autolustreLogo from "@/assets/autolustre-logo.png";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -45,7 +44,7 @@ const ResetPassword = () => {
       <div className="relative z-10 w-full max-w-md mx-4">
         <div className="glass-card p-8 neon-glow animate-fade-in">
           <div className="flex justify-center mb-8">
-            <img src={autolustreLogo} alt="AutoLustre" className="h-16 object-contain" />
+            <span className="text-[#FF6B00] text-3xl font-bold">AutoLustre</span>
           </div>
           <p className="text-center text-muted-foreground mb-8">Defina sua nova senha</p>
           <form onSubmit={handleReset} className="space-y-5">

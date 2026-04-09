@@ -17,7 +17,7 @@ interface Servico {
 interface Props {
   servicos: Servico[];
   setServicos: (s: Servico[]) => void;
-  servicosCadastrados: { id: string; nome: string }[];
+  servicosCadastrados: { id: string; nome: string; oficina_id: string | null }[];
   tipo: "servico";
 }
 
@@ -65,7 +65,10 @@ export function ProtocoloServicosTab({ servicos, setServicos, servicosCadastrado
                   checked={!!servicos.find((s) => s.servico_id === svc.id && s.tipo === tipo)}
                   onCheckedChange={() => toggleServico(svc)}
                 />
-                <span className="text-sm">{svc.nome}</span>
+                <span className="flex-1 text-sm">{svc.nome}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {svc.oficina_id ? "Oficina" : "Global"}
+                </span>
               </label>
             ))}
             {filtered.length === 0 && <p className="text-sm text-muted-foreground text-center py-2">Nenhum serviço encontrado</p>}

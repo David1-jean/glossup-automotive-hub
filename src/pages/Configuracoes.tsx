@@ -19,7 +19,7 @@ interface ValorHora {
 
 interface Servico {
   id: string;
-  oficina_id: string;
+  oficina_id: string | null;
   nome: string;
 }
 
@@ -42,15 +42,17 @@ const Configuracoes = () => {
   const [svcLoading, setSvcLoading] = useState(false);
 
   const fetchData = async () => {
+    if (!profile?.oficina_id) return;
+
     const [vhRes, svcRes] = await Promise.all([
-      supabase.from("valor_hora").select("*").order("ordem"),
-      supabase.from("servicos").select("*").order("nome"),
+      supabase.from("valor_hora").select("*").eq("oficina_id", profile.oficina_id).order("ordem"),
+      supabase.from("servicos").select("*").eq("oficina_id", profile.oficina_id).order("nome"),
     ]);
     if (vhRes.data) setValoresHora(vhRes.data);
     if (svcRes.data) setServicos(svcRes.data);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [profile?.oficina_id]);
 
   const filteredServicos = servicos.filter((s) => s.nome.toLowerCase().includes(searchServico.toLowerCase()));
 

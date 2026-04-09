@@ -22,7 +22,7 @@ interface Servico {
 interface Props {
   servicos: Servico[];
   setServicos: (s: Servico[]) => void;
-  servicosCadastrados: { id: string; nome: string }[];
+  servicosCadastrados: { id: string; nome: string; oficina_id: string | null }[];
 }
 
 export function ProtocoloFunilariaTab({ servicos, setServicos, servicosCadastrados }: Props) {
@@ -64,7 +64,10 @@ export function ProtocoloFunilariaTab({ servicos, setServicos, servicosCadastrad
             {filtered.map((svc) => (
               <label key={svc.id} className="flex items-center gap-2 p-2 rounded hover:bg-secondary/50 cursor-pointer">
                 <Checkbox checked={!!servicos.find((s) => s.servico_id === svc.id && s.tipo === tipo)} onCheckedChange={() => toggleServico(svc)} />
-                <span className="text-sm">{svc.nome}</span>
+                <span className="flex-1 text-sm">{svc.nome}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {svc.oficina_id ? "Oficina" : "Global"}
+                </span>
               </label>
             ))}
           </div>

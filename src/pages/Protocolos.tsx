@@ -30,7 +30,7 @@ const Protocolos = () => {
   const [protocolos, setProtocolos] = useState<any[]>([]);
   const [clientes, setClientes] = useState<{ id: string; nome: string }[]>([]);
   const [veiculos, setVeiculos] = useState<{ id: string; modelo: string | null; placa: string | null }[]>([]);
-  const [servicosCadastrados, setServicosCadastrados] = useState<{ id: string; nome: string }[]>([]);
+  const [servicosCadastrados, setServicosCadastrados] = useState<{ id: string; nome: string; oficina_id: string | null }[]>([]);
   const [propostas, setPropostas] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
@@ -57,21 +57,34 @@ const Protocolos = () => {
   const [selectedProposta, setSelectedProposta] = useState("");
 
   const fetchData = async () => {
+    if (!profile?.oficina_id) return;
+
     const [protRes, cliRes, veicRes, svcRes, propRes] = await Promise.all([
       supabase.from("protocolos").select("*").order("created_at", { ascending: false }),
       supabase.from("clientes").select("id, nome").order("nome"),
       supabase.from("veiculos").select("id, modelo, placa").order("modelo"),
-      supabase.from("servicos").select("id, nome").order("nome"),
+      supabase.from("servicos").select("id, nome, oficina_id"),
       supabase.from("propostas").select("*, itens_proposta(*)").order("created_at", { ascending: false }),
     ]);
+
+    if (svcRes.error) {
+      console.error("[Protocolos] erro ao carregar servicos:", svcRes.error);
+    }
+
+    const servicosOrdenados = (svcRes.data || []).sort((a, b) => {
+      if (a.oficina_id === null && b.oficina_id !== null) return -1;
+      if (a.oficina_id !== null && b.oficina_id === null) return 1;
+      return a.nome.localeCompare(b.nome, "pt-BR");
+    });
+
     if (protRes.data) setProtocolos(protRes.data);
     if (cliRes.data) setClientes(cliRes.data);
     if (veicRes.data) setVeiculos(veicRes.data);
-    if (svcRes.data) setServicosCadastrados(svcRes.data);
+    setServicosCadastrados(servicosOrdenados);
     if (propRes.data) setPropostas(propRes.data);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [profile?.oficina_id]);
 
   const getClienteNome = (id: string | null) => clientes.find((c) => c.id === id)?.nome || "—";
   const getVeiculoLabel = (id: string | null) => {

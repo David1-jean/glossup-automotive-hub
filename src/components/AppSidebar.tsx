@@ -11,7 +11,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
-import autolustreLogo from "@/assets/autolustre-logo.png";
 
 const menuItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -50,17 +49,17 @@ export function AppSidebar() {
       <SidebarContent className="flex flex-col h-full">
         <div className="p-4 flex items-center justify-center border-b border-border">
           {!collapsed ? (
-            <img src={autolustreLogo} alt="AutoLustre" className="w-[120px] object-contain" />
+            <span className="text-[#FF6B00] text-[20px] font-bold">AutoLustre</span>
           ) : (
-            <span className="text-primary font-bold text-lg">G</span>
+            <span className="text-[#FF6B00] text-[20px] font-bold">A</span>
           )}
         </div>
 
         {!collapsed && profile && (
           <div className="px-4 py-3 border-b border-border">
-            <p className="text-sm font-medium text-foreground truncate">{profile.full_name || profile.email}</p>
+            <p className="text-white text-[13px] font-medium truncate">{profile.full_name || profile.email}</p>
             {primaryRole && (
-              <Badge variant="outline" className="mt-1 text-xs border-primary/50 text-primary">
+              <Badge variant="outline" className="mt-1 text-xs border-[#FF6B00] text-[#FF6B00]">
                 {roleLabels[primaryRole] || primaryRole}
               </Badge>
             )}

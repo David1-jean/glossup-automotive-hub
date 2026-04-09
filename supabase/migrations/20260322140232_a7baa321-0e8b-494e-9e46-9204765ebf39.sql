@@ -3,9 +3,9 @@
 INSERT INTO public.oficinas (id, nome, cnpj, email, plano, status_assinatura, ativa)
 VALUES (
   '00000000-0000-0000-0000-000000000001',
-  'GlossHub Admin',
+  'AutoLustre Admin',
   NULL,
-  'admin@glosshub.com',
+  'admin@autolustre.com',
   'pro',
   'ativa',
   true

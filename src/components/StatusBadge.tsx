@@ -26,9 +26,9 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const key = status.toLowerCase();
+  const key = status?.toLowerCase() || "";
   return (
-    <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-medium capitalize", statusStyles[key] || "bg-muted text-muted-foreground", className)}>
+    <span className={cn("inline-flex items-center justify-center min-w-[130px] px-2 py-1.5 rounded-md text-[13px] font-bold uppercase", statusStyles[key] || "bg-muted text-muted-foreground", className)}>
       {status}
     </span>
   );

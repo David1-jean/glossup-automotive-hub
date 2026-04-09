@@ -226,14 +226,21 @@ const Protocolos = () => {
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              {["Cliente", "Veículo", "Data", "KM", "Status", "Assinatura", "Ações"].map((h) => (
+              {["Cód", "Cliente", "Veículo", "Data", "KM", "Status", "Assinatura", "Ações"].map((h) => (
                 <th key={h} className="text-left p-4 text-xs font-medium text-muted-foreground uppercase">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {filtered.map((item) => (
+            {filtered.map((item) => {
+              const totalItems = protocolos.length;
+              const originalIndex = protocolos.findIndex(p => p.id === item.id);
+              const seqNumber = (totalItems - originalIndex).toString().padStart(4, '0');
+              const codDisplay = `CÓD: ${seqNumber}`;
+
+              return (
               <tr key={item.id} className="border-b border-border/50 hover:bg-secondary/50 transition-colors">
+                <td className="p-4 text-sm font-mono whitespace-nowrap text-muted-foreground">{codDisplay}</td>
                 <td className="p-4 text-sm">{getClienteNome(item.cliente_id)}</td>
                 <td className="p-4 text-sm">{getVeiculoLabel(item.veiculo_id)}</td>
                 <td className="p-4 text-sm">{item.data_entrada || "—"}</td>
@@ -245,7 +252,8 @@ const Protocolos = () => {
                   <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
         {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum resultado encontrado</p>}

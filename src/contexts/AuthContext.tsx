@@ -66,46 +66,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const setupSession = async () => {
-      try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-        
-        if (initialSession?.user) {
-          await fetchUserData(initialSession.user);
-        } else {
-          setProfile(null);
-          setRoles([]);
-        }
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    setupSession();
-
+    // Use onAuthStateChange as the single source of truth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, currentSession) => {
+      async (event, currentSession) => {
         if (!mounted) return;
-        
-        if (_event === 'SIGNED_IN') {
-          setLoading(true);
-        }
 
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
-          await fetchUserData(currentSession.user);
+          // Use setTimeout to avoid potential deadlock with Supabase auth internals
+          setTimeout(async () => {
+            if (!mounted) return;
+            try {
+              await fetchUserData(currentSession.user);
+            } catch (err) {
+              console.error("[AuthContext] fetchUserData error:", err);
+            }
+            if (mounted) setLoading(false);
+          }, 0);
         } else {
           setProfile(null);
           setRoles([]);
+          setLoading(false);
         }
-        
-        if (mounted) setLoading(false);
       }
     );
 

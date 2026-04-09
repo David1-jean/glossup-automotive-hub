@@ -1,6 +1,5 @@
 import {
-  LayoutDashboard, FileText, ClipboardList, Users, Car, Calendar,
-  DollarSign, Package, BarChart3, Settings, LogOut, Crown, Sparkles,
+  LayoutDashboard, LogOut, Crown,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -12,17 +11,8 @@ import {
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 
-const menuItems = [
+const sidebarItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Propostas", url: "/propostas", icon: FileText },
-  { title: "Protocolos", url: "/protocolos", icon: ClipboardList },
-  { title: "Clientes", url: "/clientes", icon: Users },
-  { title: "Veículos", url: "/veiculos", icon: Car },
-  { title: "Agenda", url: "/agenda", icon: Calendar },
-  { title: "Financeiro", url: "/financeiro", icon: DollarSign },
-  { title: "Estoque", url: "/estoque", icon: Package },
-  { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
-  { title: "Configurações", url: "/configuracoes", icon: Settings },
 ];
 
 const roleLabels: Record<string, string> = {
@@ -47,31 +37,6 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent className="flex flex-col h-full">
-        <div className="border-b border-border/70 px-4 py-4">
-          {!collapsed ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary ring-1 ring-primary/20">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-sidebar-foreground/55">Glossup</p>
-                  <span className="block truncate text-base font-semibold text-sidebar-foreground">Automotive Hub</span>
-                </div>
-              </div>
-              <div className="rounded-2xl border border-sidebar-border bg-sidebar-accent/60 px-3 py-3">
-                <p className="text-[11px] uppercase tracking-[0.2em] text-sidebar-foreground/50">Operacao</p>
-                <p className="mt-1 text-sm font-medium text-sidebar-foreground">ERP da oficina</p>
-                <p className="mt-1 text-xs text-sidebar-foreground/60">Ordens de servico, clientes, estoque e financeiro.</p>
-              </div>
-            </div>
-          ) : (
-            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary ring-1 ring-primary/20">
-              <Sparkles className="h-5 w-5" />
-            </div>
-          )}
-        </div>
-
         {!collapsed && profile && (
           <div className="border-b border-border/70 px-4 py-3">
             <div className="flex items-center gap-2">
@@ -92,10 +57,10 @@ export function AppSidebar() {
         )}
 
         <SidebarGroup className="flex-1">
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>Navegação Rápida</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {sidebarItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end={item.url === "/"} className="rounded-xl text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-primary/12 text-primary font-medium shadow-sm ring-1 ring-primary/20">

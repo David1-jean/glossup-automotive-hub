@@ -45,6 +45,13 @@ const Protocolos = () => {
   const [fotos, setFotos] = useState<any[]>([]);
   const [checklist, setChecklist] = useState<any[]>([]);
 
+  // Quick Adds
+  const [newClienteOpen, setNewClienteOpen] = useState(false);
+  const [newVeiculoOpen, setNewVeiculoOpen] = useState(false);
+  const [newClienteNome, setNewClienteNome] = useState("");
+  const [newVeiculoModelo, setNewVeiculoModelo] = useState("");
+  const [newVeiculoPlaca, setNewVeiculoPlaca] = useState("");
+
   // Import proposta
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedProposta, setSelectedProposta] = useState("");
@@ -183,6 +190,38 @@ const Protocolos = () => {
     else { toast.success("Protocolo excluído"); fetchData(); }
   };
 
+  const handleAddCliente = async () => {
+    if (!newClienteNome.trim() || !profile?.oficina_id) {
+        toast.error("Nome do cliente é obrigatório");
+        return;
+    }
+    const { data, error } = await supabase.from("clientes").insert({ nome: newClienteNome.trim(), oficina_id: profile.oficina_id }).select().single();
+    if (error) { toast.error("Erro ao adicionar cliente"); return; }
+    setClientes((prev) => [...prev, data].sort((a,b) => a.nome.localeCompare(b.nome)));
+    setForm({ ...form, cliente_id: data.id });
+    setNewClienteNome("");
+    setNewClienteOpen(false);
+    toast.success("Cliente adicionado com sucesso");
+  };
+
+  const handleAddVeiculo = async () => {
+    if (!newVeiculoModelo.trim() || !profile?.oficina_id || !form.cliente_id) {
+        toast.error("Selecione um cliente primeiro e informe o modelo do veículo");
+        return;
+    }
+    const { data, error } = await supabase.from("veiculos").insert({ 
+      modelo: newVeiculoModelo.trim(), placa: newVeiculoPlaca.trim(), 
+      oficina_id: profile.oficina_id, cliente_id: form.cliente_id 
+    }).select().single();
+    if (error) { toast.error("Erro ao adicionar veículo"); return; }
+    setVeiculos((prev) => [...prev, data]);
+    setForm({ ...form, veiculo_id: data.id });
+    setNewVeiculoModelo("");
+    setNewVeiculoPlaca("");
+    setNewVeiculoOpen(false);
+    toast.success("Veículo adicionado com sucesso");
+  };
+
   const handleImportProposta = () => {
     const proposta = propostas.find((p) => p.id === selectedProposta);
     if (!proposta) return;
@@ -265,24 +304,30 @@ const Protocolos = () => {
             <DialogTitle>{editing ? "Editar Protocolo" : "Novo Protocolo"}</DialogTitle>
           </DialogHeader>
 
-          <div className="flex justify-end mb-2">
-            <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
-              <FileDown className="h-4 w-4 mr-2" /> Importar Orçamento
-            </Button>
-          </div>
-
           <Tabs defaultValue="detalhes" className="w-full">
             <TabsList className="w-full flex flex-wrap h-auto gap-1">
               <TabsTrigger value="detalhes">Detalhes</TabsTrigger>
               <TabsTrigger value="anotacoes">Anotações</TabsTrigger>
               <TabsTrigger value="laudo">Laudo/Termo</TabsTrigger>
-              <TabsTrigger value="funilaria">Funilaria/Pintura</TabsTrigger>
+              <TabsTrigger value="funilaria">Serviços Funilaria e Pintura</TabsTrigger>
               <TabsTrigger value="servicos">Serviços</TabsTrigger>
               <TabsTrigger value="pecas">Peças</TabsTrigger>
             </TabsList>
+            
+            <div className="flex justify-center mt-3 mb-2">
+              <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)} className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white">
+                Importar orçamento
+              </Button>
+            </div>
 
             <TabsContent value="detalhes">
-              <ProtocoloDetalhesTab form={form} setForm={setForm} clientes={clientes} veiculos={veiculos} onNewCliente={() => {}} onNewVeiculo={() => {}} />
+              <ProtocoloDetalhesTab form={form} setForm={setForm} clientes={clientes} veiculos={veiculos} onNewCliente={() => setNewClienteOpen(true)} onNewVeiculo={() => {
+                if (!form.cliente_id) {
+                  toast.error("Por favor, selecione um cliente primeiro antes de adicionar um veículo.");
+                  return;
+                }
+                setNewVeiculoOpen(true);
+              }} />
             </TabsContent>
             <TabsContent value="anotacoes">
               <ProtocoloAnotacoesTab form={form} setForm={setForm} />
@@ -304,6 +349,43 @@ const Protocolos = () => {
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleSave} disabled={loading}>{loading ? "Salvando..." : "Salvar"}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick Add Dialogs */}
+      <Dialog open={newClienteOpen} onOpenChange={setNewClienteOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Adicionar Novo Cliente</DialogTitle></DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Nome do Cliente</label>
+              <Input placeholder="Ex: João da Silva" value={newClienteNome} onChange={(e) => setNewClienteNome(e.target.value)} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setNewClienteOpen(false)}>Cancelar</Button>
+              <Button onClick={handleAddCliente}>Salvar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={newVeiculoOpen} onOpenChange={setNewVeiculoOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Adicionar Novo Veículo</DialogTitle></DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Modelo</label>
+              <Input placeholder="Ex: Corolla" value={newVeiculoModelo} onChange={(e) => setNewVeiculoModelo(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Placa</label>
+              <Input placeholder="Ex: ABC-1234" value={newVeiculoPlaca} onChange={(e) => setNewVeiculoPlaca(e.target.value)} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setNewVeiculoOpen(false)}>Cancelar</Button>
+              <Button onClick={handleAddVeiculo}>Salvar</Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

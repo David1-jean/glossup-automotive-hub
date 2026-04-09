@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader2 } from "lucide-react";
 
 interface Veiculo {
   id: string;
@@ -55,29 +55,47 @@ const Veiculos = () => {
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
   const plateDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [plateLoading, setPlateLoading] = useState(false);
+  const [plateError, setPlateError] = useState("");
+  const lastSearchedPlate = useRef("");
 
   // Auto-lookup by plate
   useEffect(() => {
-    const clean = form.placa.replace(/[^A-Z0-9]/g, "");
-    if (clean.length !== 7) return;
+    const clean = form.placa.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+    setPlateError("");
+
+    if (clean.length !== 7) {
+      lastSearchedPlate.current = "";
+      return;
+    }
+    if (clean === lastSearchedPlate.current) return;
+
     if (plateDebounce.current) clearTimeout(plateDebounce.current);
-    plateDebounce.current = setTimeout(() => {
-      fetch(`https://brasilapi.com.br/api/vehicles/v1/${clean}`)
-        .then(r => r.json())
-        .then(data => {
-          if (data && !data.message) {
-            setForm(f => ({
-              ...f,
-              marca: data.marca || f.marca,
-              modelo: data.modelo || f.modelo,
-              ano_fabricacao: data.ano ? data.ano.toString() : f.ano_fabricacao,
-              ano_modelo: data.anoModelo ? data.anoModelo.toString() : f.ano_modelo,
-            }));
-            toast.success("Dados do veículo preenchidos automaticamente");
-          }
-        })
-        .catch(() => {});
-    }, 300);
+    plateDebounce.current = setTimeout(async () => {
+      lastSearchedPlate.current = clean;
+      setPlateLoading(true);
+      setPlateError("");
+      try {
+        const res = await fetch(`https://brasilapi.com.br/api/vehicles/v1/${clean}`);
+        const data = await res.json();
+        if (!res.ok || data.message || data.error) {
+          setPlateError("Placa não encontrada");
+        } else {
+          setForm(f => ({
+            ...f,
+            marca: data.marca || f.marca,
+            modelo: data.modelo || f.modelo,
+            ano_fabricacao: data.ano ? String(data.ano) : f.ano_fabricacao,
+            ano_modelo: data.anoModelo ? String(data.anoModelo) : f.ano_modelo,
+          }));
+          toast.success("Dados do veículo preenchidos automaticamente");
+        }
+      } catch {
+        setPlateError("Erro ao buscar placa");
+      } finally {
+        setPlateLoading(false);
+      }
+    }, 500);
     return () => { if (plateDebounce.current) clearTimeout(plateDebounce.current); };
   }, [form.placa]);
 
@@ -219,7 +237,14 @@ const Veiculos = () => {
               <div><Label>Modelo *</Label><Input value={form.modelo} onChange={(e) => setForm({ ...form, modelo: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div><Label>Placa</Label><Input value={form.placa} onChange={(e) => setForm({ ...form, placa: e.target.value.toUpperCase() })} placeholder="ABC1D23" /></div>
+              <div>
+                <Label>Placa</Label>
+                <div className="relative">
+                  <Input value={form.placa} onChange={(e) => setForm({ ...form, placa: e.target.value.toUpperCase() })} placeholder="ABC1D23" />
+                  {plateLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />}
+                </div>
+                {plateError && <p className="text-xs text-destructive mt-1">{plateError}</p>}
+              </div>
               <div><Label>Ano Fabricação</Label><Input type="number" value={form.ano_fabricacao} onChange={(e) => setForm({ ...form, ano_fabricacao: e.target.value })} /></div>
               <div><Label>Ano Modelo</Label><Input type="number" value={form.ano_modelo} onChange={(e) => setForm({ ...form, ano_modelo: e.target.value })} /></div>
             </div>

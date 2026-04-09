@@ -11,7 +11,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
-import glosshubLogo from "@/assets/glosshub-logo.png";
+import autolustreLogo from "@/assets/autolustre-logo.png";
 
 const menuItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -50,7 +50,7 @@ export function AppSidebar() {
       <SidebarContent className="flex flex-col h-full">
         <div className="p-4 flex items-center justify-center border-b border-border">
           {!collapsed ? (
-            <img src={glosshubLogo} alt="Oficina" className="h-8 object-contain" />
+            <img src={autolustreLogo} alt="AutoLustre" className="w-[120px] object-contain" />
           ) : (
             <span className="text-primary font-bold text-lg">G</span>
           )}

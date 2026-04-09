@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import workshopBg from "@/assets/workshop-bg.jpg";
-import glosshubLogo from "@/assets/glosshub-logo.png";
+import autolustreLogo from "@/assets/autolustre-logo.png";
 
 const Signup = () => {
   const [fullName, setFullName] = useState("");
@@ -47,7 +47,7 @@ const Signup = () => {
       <div className="relative z-10 w-full max-w-md mx-4">
         <div className="glass-card p-8 neon-glow animate-fade-in">
           <div className="flex justify-center mb-8">
-            <img src={glosshubLogo} alt="Oficina" className="h-16 object-contain" />
+            <img src={autolustreLogo} alt="AutoLustre" className="h-16 object-contain" />
           </div>
 
           <p className="text-center text-muted-foreground mb-8">Crie sua conta</p>

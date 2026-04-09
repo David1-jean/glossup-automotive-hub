@@ -30,7 +30,10 @@ export function ProtocoloFunilariaTab({ servicos, setServicos, servicosCadastrad
   const [showPicker, setShowPicker] = useState(false);
 
   const tipo = "funilaria";
-  const filtered = servicosCadastrados.filter((s) => s.nome.toLowerCase().includes(search.toLowerCase()));
+  const normalizedSearch = search.trim().toLowerCase();
+  const filtered = normalizedSearch
+    ? servicosCadastrados.filter((s) => s.nome.toLowerCase().includes(normalizedSearch))
+    : servicosCadastrados;
   const currentServicos = servicos.filter((s) => s.tipo === tipo);
 
   const toggleServico = (svc: { id: string; nome: string }) => {
@@ -50,7 +53,7 @@ export function ProtocoloFunilariaTab({ servicos, setServicos, servicosCadastrad
 
   return (
     <div className="space-y-4">
-      <Button variant="outline" onClick={() => setShowPicker(!showPicker)}>
+      <Button type="button" variant="outline" onClick={() => setShowPicker((current) => !current)}>
         <Plus className="h-4 w-4 mr-2" /> Adicionar Serviços
       </Button>
 
@@ -70,6 +73,7 @@ export function ProtocoloFunilariaTab({ servicos, setServicos, servicosCadastrad
                 </span>
               </label>
             ))}
+            {filtered.length === 0 && <p className="text-sm text-muted-foreground text-center py-2">Nenhum serviço encontrado</p>}
           </div>
         </div>
       )}

@@ -25,9 +25,10 @@ export function ProtocoloServicosTab({ servicos, setServicos, servicosCadastrado
   const [search, setSearch] = useState("");
   const [showPicker, setShowPicker] = useState(false);
 
-  const filtered = servicosCadastrados.filter((s) =>
-    s.nome.toLowerCase().includes(search.toLowerCase())
-  );
+  const normalizedSearch = search.trim().toLowerCase();
+  const filtered = normalizedSearch
+    ? servicosCadastrados.filter((s) => s.nome.toLowerCase().includes(normalizedSearch))
+    : servicosCadastrados;
 
   const toggleServico = (svc: { id: string; nome: string }) => {
     const exists = servicos.find((s) => s.servico_id === svc.id && s.tipo === tipo);
@@ -48,7 +49,7 @@ export function ProtocoloServicosTab({ servicos, setServicos, servicosCadastrado
 
   return (
     <div className="space-y-4">
-      <Button variant="outline" onClick={() => setShowPicker(!showPicker)}>
+      <Button type="button" variant="outline" onClick={() => setShowPicker((current) => !current)}>
         <Plus className="h-4 w-4 mr-2" /> Adicionar Serviços
       </Button>
 

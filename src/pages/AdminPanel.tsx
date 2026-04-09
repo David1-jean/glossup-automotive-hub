@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Building2, CheckCircle, XCircle, DollarSign, Plus, Pencil, Eye, Trash2 } from "lucide-react";
+import { Building2, CheckCircle, XCircle, DollarSign, Plus, Pencil, Eye, Trash2, Upload } from "lucide-react";
 
 interface Oficina {
   id: string;
@@ -25,13 +25,16 @@ interface Oficina {
   data_vencimento: string | null;
   ativa: boolean;
   telefone: string | null;
+  logo_url?: string | null;
 }
 
 interface OficinFormData {
   nome: string;
   cnpj: string;
   email: string;
+  telefone: string;
   whatsapp: string;
+  logo_url: string;
   cep: string;
   rua: string;
   numero: string;
@@ -48,7 +51,7 @@ interface OficinFormData {
 }
 
 const emptyForm: OficinFormData = {
-  nome: "", cnpj: "", email: "", whatsapp: "",
+  nome: "", cnpj: "", email: "", telefone: "", whatsapp: "", logo_url: "",
   cep: "", rua: "", numero: "", bairro: "", cidade: "", uf: "",
   plano: "trial", status_assinatura: "trial",
   data_inicio: new Date().toISOString().split("T")[0],
@@ -79,6 +82,7 @@ const AdminPanel = () => {
   const [form, setForm] = useState<OficinFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
 
   const fetchOficinas = async () => {
     const { data, error } = await supabase.from("oficinas").select("*").order("created_at", { ascending: false });
@@ -155,20 +159,43 @@ const AdminPanel = () => {
   const openEdit = (oficina: Oficina) => {
     const parts = (oficina.endereco || "").split(", ");
     setEditingId(oficina.id);
-    setForm({
-      nome: oficina.nome,
-      cnpj: oficina.cnpj || "",
-      email: oficina.email || "",
-      whatsapp: oficina.whatsapp || "",
-      cep: "", rua: parts[0] || "", numero: parts[1] || "",
-      bairro: parts[2] || "", cidade: parts[3] || "", uf: parts[4] || "",
-      plano: oficina.plano,
+      setForm({
+        nome: oficina.nome,
+        cnpj: oficina.cnpj || "",
+        email: oficina.email || "",
+        telefone: oficina.telefone || "",
+        whatsapp: oficina.whatsapp || "",
+        logo_url: oficina.logo_url || "",
+        cep: "", rua: parts[0] || "", numero: parts[1] || "",
+        bairro: parts[2] || "", cidade: parts[3] || "", uf: parts[4] || "",
+        plano: oficina.plano,
       status_assinatura: oficina.status_assinatura,
       data_inicio: oficina.data_inicio ? oficina.data_inicio.split("T")[0] : "",
       data_vencimento: oficina.data_vencimento ? oficina.data_vencimento.split("T")[0] : "",
       gerente_nome: "", gerente_email: "", gerente_senha: "",
     });
     setDialogOpen(true);
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLogoUploading(true);
+    const extension = file.name.includes(".") ? file.name.split(".").pop() : "png";
+    const path = `${editingId || `temp-${Date.now()}`}/${Date.now()}.${extension}`;
+    const { data, error } = await supabase.storage.from("oficinas-logos").upload(path, file, { upsert: true });
+
+    if (error) {
+      toast.error("Erro ao enviar logo");
+      setLogoUploading(false);
+      return;
+    }
+
+    const { data: publicUrl } = supabase.storage.from("oficinas-logos").getPublicUrl(data.path);
+    setForm((current) => ({ ...current, logo_url: publicUrl.publicUrl }));
+    setLogoUploading(false);
+    toast.success("Logo enviada com sucesso");
   };
 
   const handleSave = async () => {
@@ -180,7 +207,9 @@ const AdminPanel = () => {
       nome: form.nome,
       cnpj: form.cnpj || null,
       email: form.email || null,
+      telefone: form.telefone || null,
       whatsapp: form.whatsapp || null,
+      logo_url: form.logo_url || null,
       endereco: endereco || null,
       plano: form.plano,
       status_assinatura: form.status_assinatura,
@@ -365,8 +394,37 @@ const AdminPanel = () => {
               <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
             </div>
             <div className="space-y-2">
+              <Label>Telefone</Label>
+              <Input value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
               <Label>WhatsApp</Label>
               <Input value={form.whatsapp} onChange={e => setForm(f => ({ ...f, whatsapp: e.target.value }))} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Logo da Oficina</Label>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="h-24 w-24 overflow-hidden rounded-md border border-border bg-muted/20 flex items-center justify-center">
+                  {form.logo_url ? (
+                    <img src={form.logo_url} alt="Logo da oficina" className="h-full w-full object-contain" />
+                  ) : (
+                    <span className="text-xs text-muted-foreground text-center px-2">Sem logo</span>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="cursor-pointer">
+                    <Button type="button" variant="outline" asChild disabled={logoUploading}>
+                      <span><Upload className="h-4 w-4 mr-2" />{logoUploading ? "Enviando..." : "Enviar logo"}</span>
+                    </Button>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                  </label>
+                  {form.logo_url && (
+                    <Button type="button" variant="ghost" className="justify-start px-0" onClick={() => setForm(f => ({ ...f, logo_url: "" }))}>
+                      Remover logo
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>CEP</Label>
@@ -461,6 +519,7 @@ const AdminPanel = () => {
               <div className="flex justify-between"><span className="text-muted-foreground">Nome:</span><span className="text-foreground font-medium">{selectedOficina.nome}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">CNPJ:</span><span>{selectedOficina.cnpj || "—"}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">E-mail:</span><span>{selectedOficina.email || "—"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Telefone:</span><span>{selectedOficina.telefone || "—"}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">WhatsApp:</span><span>{selectedOficina.whatsapp || "—"}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Endereço:</span><span>{selectedOficina.endereco || "—"}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Plano:</span><Badge variant="outline" className="uppercase text-xs">{selectedOficina.plano}</Badge></div>

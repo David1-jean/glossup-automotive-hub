@@ -2,13 +2,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/StatusBadge";
 import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash2, FileDown } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Printer } from "lucide-react";
 import { ProtocoloDetalhesTab } from "@/components/protocolos/ProtocoloDetalhesTab";
 import { ProtocoloAnotacoesTab } from "@/components/protocolos/ProtocoloAnotacoesTab";
 import { ProtocoloLaudoTab, DEFAULT_TERMO } from "@/components/protocolos/ProtocoloLaudoTab";
@@ -25,6 +27,55 @@ const emptyForm = {
   termo_autorizacao: DEFAULT_TERMO,
 };
 
+interface OficinaPrintData {
+  nome: string;
+  cnpj: string | null;
+  endereco: string | null;
+  telefone: string | null;
+  whatsapp: string | null;
+  logo_url?: string | null;
+}
+
+interface ClientePrintData {
+  nome: string;
+  cpf: string | null;
+  cnpj: string | null;
+  whatsapp: string | null;
+  telefone: string | null;
+  rua: string | null;
+  numero: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
+  cep: string | null;
+}
+
+interface VeiculoPrintData {
+  marca: string | null;
+  modelo: string | null;
+  placa: string | null;
+  ano_fabricacao: number | null;
+  ano_modelo: number | null;
+  cor: string | null;
+  combustivel: string | null;
+  chassi: string | null;
+}
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value || 0);
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+const safeText = (value: string | number | null | undefined) => escapeHtml(value == null || value === "" ? "-" : String(value));
+
+const buildAddress = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(", ");
+
 const Protocolos = () => {
   const { profile } = useAuth();
   const [protocolos, setProtocolos] = useState<any[]>([]);
@@ -39,6 +90,7 @@ const Protocolos = () => {
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
+  const [showPrintValues, setShowPrintValues] = useState(true);
 
   // Sub-entity states
   const [servicos, setServicos] = useState<any[]>([]);
@@ -100,6 +152,233 @@ const Protocolos = () => {
   const getVeiculoLabel = (id: string | null) => {
     const v = veiculos.find((v) => v.id === id);
     return v ? `${v.modelo || ""} ${v.placa || ""}`.trim() || "—" : "—";
+  };
+
+  const getProtocoloCode = (protocolo?: { id?: string } | null) => {
+    if (protocolo?.id) {
+      const originalIndex = protocolos.findIndex((item) => item.id === protocolo.id);
+      if (originalIndex >= 0) {
+        return (protocolos.length - originalIndex).toString().padStart(4, "0");
+      }
+    }
+
+    return (protocolos.length + 1).toString().padStart(4, "0");
+  };
+
+  const handlePrint = async () => {
+    if (!profile?.oficina_id) {
+      toast.error("Oficina não identificada");
+      return;
+    }
+
+    const [oficinaRes, clienteRes, veiculoRes] = await Promise.all([
+      supabase.from("oficinas").select("nome, cnpj, endereco, telefone, whatsapp, logo_url").eq("id", profile.oficina_id).single(),
+      form.cliente_id
+        ? supabase.from("clientes").select("nome, cpf, cnpj, whatsapp, telefone, rua, numero, bairro, cidade, uf, cep").eq("id", form.cliente_id).single()
+        : Promise.resolve({ data: null, error: null }),
+      form.veiculo_id
+        ? supabase.from("veiculos").select("marca, modelo, placa, ano_fabricacao, ano_modelo, cor, combustivel, chassi").eq("id", form.veiculo_id).single()
+        : Promise.resolve({ data: null, error: null }),
+    ]);
+
+    if (oficinaRes.error || !oficinaRes.data) {
+      toast.error("Erro ao carregar dados da oficina para impressão");
+      return;
+    }
+
+    if (clienteRes && "error" in clienteRes && clienteRes.error) {
+      toast.error("Erro ao carregar dados do cliente para impressão");
+      return;
+    }
+
+    if (veiculoRes && "error" in veiculoRes && veiculoRes.error) {
+      toast.error("Erro ao carregar dados do veículo para impressão");
+      return;
+    }
+
+    const oficina = oficinaRes.data as OficinaPrintData;
+    const cliente = (clienteRes && "data" in clienteRes ? clienteRes.data : null) as ClientePrintData | null;
+    const veiculo = (veiculoRes && "data" in veiculoRes ? veiculoRes.data : null) as VeiculoPrintData | null;
+    const protocoloCode = getProtocoloCode(editing);
+    const clienteDocumento = cliente?.cnpj || cliente?.cpf || "-";
+    const clienteEndereco = buildAddress([cliente?.rua, cliente?.numero, cliente?.bairro, cliente?.cidade, cliente?.uf, cliente?.cep]);
+    const servicosTotal = servicos.reduce((sum, item) => sum + Number(item.valor || 0), 0);
+    const pecasTotal = pecas.reduce((sum, item) => sum + Number(item.valor || 0), 0);
+    const totalGeral = servicosTotal + pecasTotal;
+    const assinaturaData = form.data_entrada ? new Date(`${form.data_entrada}T00:00:00`).toLocaleDateString("pt-BR") : "-";
+
+    const serviceRows = servicos.length
+      ? servicos.map((item) => `
+          <tr>
+            <td>${safeText(item.nome)}</td>
+            <td style="text-align:center">${safeText(item.horas || 0)}</td>
+            ${showPrintValues ? `<td style="text-align:right">${safeText(formatCurrency(Number(item.valor || 0)))}</td>` : ""}
+          </tr>`).join("")
+      : `<tr><td colspan="${showPrintValues ? 3 : 2}" class="empty">Nenhum serviço informado</td></tr>`;
+
+    const pecasRows = pecas.length
+      ? pecas.map((item) => `
+          <tr>
+            <td>${safeText(item.nome)}</td>
+            ${showPrintValues ? `<td style="text-align:right">${safeText(formatCurrency(Number(item.valor || 0)))}</td>` : ""}
+          </tr>`).join("")
+      : `<tr><td colspan="${showPrintValues ? 2 : 1}" class="empty">Nenhuma peça informada</td></tr>`;
+
+    const printWindow = window.open("", "_blank", "width=900,height=1200");
+    if (!printWindow) {
+      toast.error("Não foi possível abrir a janela de impressão");
+      return;
+    }
+
+    const html = `<!DOCTYPE html>
+      <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8" />
+          <title>Ordem de Serviço ${safeText(protocoloCode)}</title>
+          <style>
+            @page { size: A4; margin: 12mm; }
+            * { box-sizing: border-box; }
+            body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #111827; background: #fff; }
+            .page { width: 100%; }
+            .header, .row, .signature { display: flex; justify-content: space-between; gap: 20px; }
+            .header { align-items: flex-start; border-bottom: 2px solid #111827; padding-bottom: 16px; margin-bottom: 16px; }
+            .brand { display: flex; gap: 16px; align-items: flex-start; }
+            .logo { width: 92px; height: 92px; border: 1px solid #d1d5db; border-radius: 8px; object-fit: contain; background: #fff; }
+            .title { font-size: 26px; font-weight: 700; margin: 0 0 10px; }
+            .meta { text-align: right; min-width: 180px; }
+            .meta strong { display: block; font-size: 14px; color: #374151; }
+            .meta span { display: block; font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+            .section { margin-bottom: 18px; }
+            .section h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 10px; color: #374151; }
+            .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+            .field { border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px; min-height: 56px; }
+            .field-label { display: block; font-size: 11px; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+            .field-value { font-size: 14px; font-weight: 600; word-break: break-word; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #d1d5db; padding: 10px; font-size: 13px; vertical-align: top; }
+            th { background: #f3f4f6; text-align: left; }
+            .empty { text-align: center; color: #6b7280; }
+            .totals { margin-top: 12px; display: flex; justify-content: flex-end; }
+            .totals-box { min-width: 260px; border: 1px solid #111827; border-radius: 8px; padding: 12px 14px; }
+            .totals-line { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-size: 14px; }
+            .totals-line:last-child { margin-bottom: 0; font-size: 16px; font-weight: 700; }
+            .signature { align-items: flex-end; margin-top: 28px; }
+            .signature-box { flex: 1; }
+            .signature-line { border-top: 1px solid #111827; padding-top: 8px; font-size: 13px; }
+            .footer-note { margin-top: 18px; font-size: 12px; color: #4b5563; }
+            @media print {
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="page">
+            <div class="header">
+              <div class="brand">
+                ${oficina.logo_url ? `<img class="logo" src="${escapeHtml(oficina.logo_url)}" alt="Logo da oficina" />` : ""}
+                <div>
+                  <h1 class="title">${safeText(oficina.nome)}</h1>
+                  <div>${safeText(oficina.cnpj)}</div>
+                  <div>${safeText(oficina.endereco)}</div>
+                  <div>Telefone: ${safeText(oficina.telefone)}</div>
+                  <div>WhatsApp: ${safeText(oficina.whatsapp)}</div>
+                </div>
+              </div>
+              <div class="meta">
+                <strong>Ordem de Serviço</strong>
+                <span>#${safeText(protocoloCode)}</span>
+                <strong>Data de abertura</strong>
+                <div>${safeText(form.data_entrada ? new Date(`${form.data_entrada}T00:00:00`).toLocaleDateString("pt-BR") : "-")}</div>
+              </div>
+            </div>
+
+            <section class="section">
+              <h2>Dados do cliente</h2>
+              <div class="grid">
+                <div class="field"><span class="field-label">Nome</span><div class="field-value">${safeText(cliente?.nome || getClienteNome(form.cliente_id))}</div></div>
+                <div class="field"><span class="field-label">CPF/CNPJ</span><div class="field-value">${safeText(clienteDocumento)}</div></div>
+                <div class="field"><span class="field-label">WhatsApp</span><div class="field-value">${safeText(cliente?.whatsapp)}</div></div>
+                <div class="field"><span class="field-label">Telefone</span><div class="field-value">${safeText(cliente?.telefone)}</div></div>
+                <div class="field" style="grid-column: 1 / -1;"><span class="field-label">Endereço</span><div class="field-value">${safeText(clienteEndereco)}</div></div>
+              </div>
+            </section>
+
+            <section class="section">
+              <h2>Dados do veículo</h2>
+              <div class="grid">
+                <div class="field"><span class="field-label">Marca</span><div class="field-value">${safeText(veiculo?.marca)}</div></div>
+                <div class="field"><span class="field-label">Modelo</span><div class="field-value">${safeText(veiculo?.modelo || getVeiculoLabel(form.veiculo_id))}</div></div>
+                <div class="field"><span class="field-label">Placa</span><div class="field-value">${safeText(veiculo?.placa)}</div></div>
+                <div class="field"><span class="field-label">Ano</span><div class="field-value">${safeText([veiculo?.ano_fabricacao, veiculo?.ano_modelo].filter(Boolean).join("/") || "-")}</div></div>
+                <div class="field"><span class="field-label">Cor</span><div class="field-value">${safeText(veiculo?.cor)}</div></div>
+                <div class="field"><span class="field-label">Combustível</span><div class="field-value">${safeText(veiculo?.combustivel)}</div></div>
+                <div class="field"><span class="field-label">Chassi</span><div class="field-value">${safeText(veiculo?.chassi)}</div></div>
+                <div class="field"><span class="field-label">Kilometragem</span><div class="field-value">${safeText(form.km)}</div></div>
+              </div>
+            </section>
+
+            <section class="section">
+              <h2>Serviços realizados</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Serviço</th>
+                    <th style="width: 110px; text-align:center;">Horas</th>
+                    ${showPrintValues ? '<th style="width: 150px; text-align:right;">Valor</th>' : ""}
+                  </tr>
+                </thead>
+                <tbody>${serviceRows}</tbody>
+              </table>
+            </section>
+
+            <section class="section">
+              <h2>Peças utilizadas</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Peça</th>
+                    ${showPrintValues ? '<th style="width: 150px; text-align:right;">Valor</th>' : ""}
+                  </tr>
+                </thead>
+                <tbody>${pecasRows}</tbody>
+              </table>
+            </section>
+
+            ${showPrintValues ? `
+              <div class="totals">
+                <div class="totals-box">
+                  <div class="totals-line"><span>Total serviços</span><strong>${safeText(formatCurrency(servicosTotal))}</strong></div>
+                  <div class="totals-line"><span>Total peças</span><strong>${safeText(formatCurrency(pecasTotal))}</strong></div>
+                  <div class="totals-line"><span>Total geral</span><strong>${safeText(formatCurrency(totalGeral))}</strong></div>
+                </div>
+              </div>` : ""}
+
+            <section class="section footer-note">
+              <div>Previsão de entrega: ${safeText(form.previsao_entrega ? new Date(`${form.previsao_entrega}T00:00:00`).toLocaleDateString("pt-BR") : "-")}${form.hora_entrega ? ` às ${safeText(form.hora_entrega)}` : ""}</div>
+              <div>Forma de pagamento: ${safeText(form.forma_pagamento)}</div>
+            </section>
+
+            <div class="signature">
+              <div class="signature-box">
+                <div class="signature-line">Assinatura do cliente: ${safeText(cliente?.nome || getClienteNome(form.cliente_id))}</div>
+              </div>
+              <div class="signature-box" style="max-width: 220px;">
+                <div class="signature-line">Data: ${safeText(assinaturaData)}</div>
+              </div>
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.focus();
+              window.print();
+            };
+          </script>
+        </body>
+      </html>`;
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
   };
 
   const filtered = protocolos.filter((p) => {
@@ -369,9 +648,18 @@ const Protocolos = () => {
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={loading}>{loading ? "Salvando..." : "Salvar"}</Button>
+          <div className="flex flex-col gap-3 mt-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Checkbox id="show-print-values" checked={showPrintValues} onCheckedChange={(checked) => setShowPrintValues(checked === true)} />
+              <Label htmlFor="show-print-values" className="text-sm">Exibir valores</Label>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={handlePrint}>
+                <Printer className="h-4 w-4 mr-2" /> Imprimir OS
+              </Button>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
+              <Button onClick={handleSave} disabled={loading}>{loading ? "Salvando..." : "Salvar"}</Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

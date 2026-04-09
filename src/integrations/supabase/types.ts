@@ -294,6 +294,7 @@ export type Database = {
           email: string | null
           endereco: string | null
           id: string
+          logo_url: string | null
           nome: string
           plano: string
           status_assinatura: string
@@ -310,6 +311,7 @@ export type Database = {
           email?: string | null
           endereco?: string | null
           id?: string
+          logo_url?: string | null
           nome: string
           plano?: string
           status_assinatura?: string
@@ -326,6 +328,7 @@ export type Database = {
           email?: string | null
           endereco?: string | null
           id?: string
+          logo_url?: string | null
           nome?: string
           plano?: string
           status_assinatura?: string

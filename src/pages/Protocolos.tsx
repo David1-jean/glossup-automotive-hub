@@ -715,9 +715,15 @@ const Protocolos = () => {
           </Tabs>
 
           <div className="flex flex-col gap-3 mt-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <Checkbox id="show-print-values" checked={showPrintValues} onCheckedChange={(checked) => setShowPrintValues(checked === true)} />
-              <Label htmlFor="show-print-values" className="text-sm">Exibir valores na impressão</Label>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox id="show-print-values" checked={showPrintValues} onCheckedChange={(checked) => setShowPrintValues(checked === true)} />
+                <Label htmlFor="show-print-values" className="text-sm">Exibir valores na impressão</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox id="show-print-termo" checked={showPrintTermo} onCheckedChange={(checked) => setShowPrintTermo(checked === true)} />
+                <Label htmlFor="show-print-termo" className="text-sm">Imprimir termo de autorização</Label>
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={handlePrint}>

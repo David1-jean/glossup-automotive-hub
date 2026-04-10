@@ -377,6 +377,35 @@ const Protocolos = () => {
                 </div>
               </div>` : ""}
 
+            ${fotos.length > 0 ? `
+            <section class="section">
+              <h2>Registro fotográfico</h2>
+              <div class="foto-grid">
+                ${fotos.map((f) => `
+                  <div class="foto-card">
+                    <img src="${escapeHtml(f.url)}" alt="${safeText(f.peca)}" crossorigin="anonymous" />
+                    <div class="foto-info">
+                      ${f.peca ? `<strong>Peça: ${safeText(f.peca)}</strong>` : ""}
+                      ${f.observacoes ? `<span>${safeText(f.observacoes)}</span>` : ""}
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            </section>` : ""}
+
+            ${checklist.length > 0 ? `
+            <section class="section">
+              <h2>Checklist de vistoria</h2>
+              <div class="checklist-grid">
+                ${checklist.map((c) => `
+                  <div class="checklist-item">
+                    <span style="flex:1">${safeText(c.item)}</span>
+                    <span class="checklist-badge ${c.condicao === 'ok' ? 'checklist-ok' : 'checklist-pending'}">${c.condicao === 'ok' ? 'OK' : 'Pendente'}</span>
+                  </div>
+                `).join("")}
+              </div>
+            </section>` : ""}
+
             <section class="section footer-note">
               <div>Previsão de entrega: ${safeText(form.previsao_entrega ? new Date(`${form.previsao_entrega}T00:00:00`).toLocaleDateString("pt-BR") : "-")}${form.hora_entrega ? ` às ${safeText(form.hora_entrega)}` : ""}</div>
               <div>Forma de pagamento: ${safeText(form.forma_pagamento)}</div>
@@ -390,6 +419,13 @@ const Protocolos = () => {
                 <div class="signature-line">Data: ${safeText(assinaturaData)}</div>
               </div>
             </div>
+
+            ${showPrintTermo && form.termo_autorizacao ? `
+            <div style="page-break-before: always;"></div>
+            <section class="section" style="margin-top: 24px;">
+              <h2>Termo de Autorização de Serviço</h2>
+              <div class="termo-section">${escapeHtml(form.termo_autorizacao)}</div>
+            </section>` : ""}
           </div>
           <script>
             window.onload = function() {

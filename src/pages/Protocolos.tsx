@@ -212,20 +212,28 @@ const Protocolos = () => {
     const assinaturaData = form.data_entrada ? new Date(`${form.data_entrada}T00:00:00`).toLocaleDateString("pt-BR") : "-";
 
     const serviceRows = servicos.length
-      ? servicos.map((item) => `
+      ? servicos.map((item) => {
+          const valorNum = Number(item.valor);
+          const temValor = item.valor !== null && item.valor !== undefined && item.valor !== "" && !isNaN(valorNum);
+          return `
           <tr>
             <td>${safeText(item.nome)}</td>
             <td style="text-align:center">${safeText(item.horas || 0)}</td>
-            ${showPrintValues ? `<td style="text-align:right">${safeText(hasValue(item.valor) ? formatCurrency(Number(item.valor || 0)) : "-")}</td>` : ""}
-          </tr>`).join("")
+            ${showPrintValues ? `<td style="text-align:right">${temValor ? formatCurrency(valorNum) : "-"}</td>` : ""}
+          </tr>`;
+        }).join("")
       : `<tr><td colspan="${showPrintValues ? 3 : 2}" class="empty">Nenhum serviço informado</td></tr>`;
 
     const pecasRows = pecas.length
-      ? pecas.map((item) => `
+      ? pecas.map((item) => {
+          const valorNum = Number(item.valor);
+          const temValor = item.valor !== null && item.valor !== undefined && item.valor !== "" && !isNaN(valorNum);
+          return `
           <tr>
             <td>${safeText(item.nome)}</td>
-            ${showPrintValues ? `<td style="text-align:right">${safeText(hasValue(item.valor) ? formatCurrency(Number(item.valor || 0)) : "-")}</td>` : ""}
-          </tr>`).join("")
+            ${showPrintValues ? `<td style="text-align:right">${temValor ? formatCurrency(valorNum) : "-"}</td>` : ""}
+          </tr>`;
+        }).join("")
       : `<tr><td colspan="${showPrintValues ? 2 : 1}" class="empty">Nenhuma peça informada</td></tr>`;
 
     const printWindow = window.open("", "_blank", "width=900,height=1200");

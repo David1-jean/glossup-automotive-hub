@@ -42,17 +42,19 @@ const Agenda = () => {
   const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
+    if (!profile?.oficina_id) return;
+    const oid = profile.oficina_id;
     const [agRes, cliRes, veicRes] = await Promise.all([
-      supabase.from("agendamentos").select("*").order("data", { ascending: true }),
-      supabase.from("clientes").select("id, nome").order("nome"),
-      supabase.from("veiculos").select("id, modelo, placa").order("modelo"),
+      supabase.from("agendamentos").select("*").eq("oficina_id", oid).order("data", { ascending: true }),
+      supabase.from("clientes").select("id, nome").eq("oficina_id", oid).order("nome"),
+      supabase.from("veiculos").select("id, modelo, placa").eq("oficina_id", oid).order("modelo"),
     ]);
     if (agRes.data) setAgendamentos(agRes.data);
     if (cliRes.data) setClientes(cliRes.data);
     if (veicRes.data) setVeiculos(veicRes.data);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [profile?.oficina_id]);
 
   const getClienteNome = (id: string | null) => clientes.find((c) => c.id === id)?.nome || "—";
   const getVeiculoLabel = (id: string | null) => {

@@ -100,15 +100,17 @@ const Veiculos = () => {
   }, [form.placa]);
 
   const fetchData = async () => {
+    if (!profile?.oficina_id) return;
+    const oid = profile.oficina_id;
     const [veicRes, cliRes] = await Promise.all([
-      supabase.from("veiculos").select("*").order("modelo"),
-      supabase.from("clientes").select("id, nome").order("nome"),
+      supabase.from("veiculos").select("*").eq("oficina_id", oid).order("modelo"),
+      supabase.from("clientes").select("id, nome").eq("oficina_id", oid).order("nome"),
     ]);
     if (veicRes.data) setVeiculos(veicRes.data);
     if (cliRes.data) setClientes(cliRes.data);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [profile?.oficina_id]);
 
   const filtered = veiculos.filter((v) =>
     (v.modelo || "").toLowerCase().includes(search.toLowerCase()) ||

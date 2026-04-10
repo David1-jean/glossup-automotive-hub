@@ -36,11 +36,12 @@ const Estoque = () => {
   const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
-    const { data } = await supabase.from("estoque").select("*").order("nome");
+    if (!profile?.oficina_id) return;
+    const { data } = await supabase.from("estoque").select("*").eq("oficina_id", profile.oficina_id).order("nome");
     if (data) setItens(data);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [profile?.oficina_id]);
 
   const filtered = itens.filter((p) =>
     p.nome.toLowerCase().includes(search.toLowerCase()) ||

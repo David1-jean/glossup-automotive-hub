@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, LogOut, Crown,
+  LayoutDashboard, LogOut, Crown, User,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -37,12 +37,20 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent className="flex flex-col h-full">
-        {!collapsed && profile && (
+{!collapsed && profile && (
           <div className="border-b border-border/70 px-4 py-3">
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-foreground">
-                {(profile.full_name || profile.email || "U").slice(0, 1).toUpperCase()}
-              </div>
+              {profile.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt="Foto de perfil"
+                  className="h-9 w-9 rounded-full object-cover border border-sidebar-border"
+                />
+              ) : (
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-foreground">
+                  <User className="h-5 w-5" />
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[13px] font-medium text-sidebar-foreground">{profile.full_name || profile.email}</p>
                 <p className="truncate text-[11px] text-sidebar-foreground/55">Acesso autenticado</p>

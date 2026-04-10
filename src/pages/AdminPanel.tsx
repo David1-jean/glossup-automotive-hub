@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Building2, CheckCircle, XCircle, DollarSign, Plus, Pencil, Eye, Trash2, Upload } from "lucide-react";
+import { Building2, CheckCircle, XCircle, DollarSign, Plus, Pencil, Eye, Trash2, Upload, User } from "lucide-react";
 
 interface Oficina {
   id: string;
@@ -71,7 +72,11 @@ const statusBadge = (status: string) => {
 };
 
 const AdminPanel = () => {
+  const { profile, user } = useAuth();
   const [oficinas, setOficinas] = useState<Oficina[]>([]);
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -94,7 +99,48 @@ const AdminPanel = () => {
     setLoading(false);
   };
 
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      setUserAvatarUrl(profile.avatar_url);
+    }
+  }, [profile?.avatar_url]);
+
   useEffect(() => { fetchOficinas(); }, []);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setAvatarUploading(true);
+    try {
+      const extension = file.name.includes(".") ? file.name.split(".").pop() : "png";
+      const path = `avatars/${user.id}/${Date.now()}.${extension}`;
+      const { data, error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+
+      if (error) {
+        toast.error("Erro ao enviar foto");
+        setAvatarUploading(false);
+        return;
+      }
+
+      const { data: publicUrl } = supabase.storage.from("avatars").getPublicUrl(data.path);
+      const avatarUrl = publicUrl.publicUrl;
+
+      await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("id", user.id);
+      setUserAvatarUrl(avatarUrl);
+      toast.success("Foto de perfil atualizada");
+    } catch {
+      toast.error("Erro ao processar foto");
+    }
+    setAvatarUploading(false);
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!user) return;
+    await supabase.from("profiles").update({ avatar_url: null }).eq("id", user.id);
+    setUserAvatarUrl("");
+    toast.success("Foto de perfil removida");
+  };
 
   const totalOficinas = oficinas.length;
   const ativas = oficinas.filter(o => o.status_assinatura === "ativa").length;
@@ -270,6 +316,53 @@ const AdminPanel = () => {
           <Plus className="h-4 w-4" /> Nova Oficina
         </Button>
       </div>
+
+      {/* User Profile Section */}
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="text-lg font-medium">Meu Perfil</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col sm:flex-row items-center gap-6">
+          {userAvatarUrl || profile?.avatar_url ? (
+            <img
+              src={userAvatarUrl || profile?.avatar_url || ""}
+              alt="Foto de perfil"
+              className="h-20 w-20 rounded-full object-cover border-2 border-primary"
+            />
+          ) : (
+            <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
+              <User className="h-10 w-10 text-muted-foreground" />
+            </div>
+          )}
+          <div className="flex flex-col gap-3">
+            <div>
+              <Label className="text-muted-foreground text-xs">Nome</Label>
+              <p className="font-medium">{profile?.full_name || user?.email || "—"}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground text-xs">E-mail</Label>
+              <p className="text-sm text-muted-foreground">{user?.email || "—"}</p>
+            </div>
+            <div className="flex gap-2">
+              <label className="cursor-pointer">
+                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={avatarUploading} />
+                <Button variant="outline" size="sm" disabled={avatarUploading} asChild>
+                  <span className="cursor-pointer">
+                    <Upload className="h-4 w-4 mr-1" />
+                    {avatarUploading ? "Enviando..." : "Alterar foto"}
+                  </span>
+                </Button>
+              </label>
+              {(userAvatarUrl || profile?.avatar_url) && (
+                <Button variant="ghost" size="sm" onClick={handleRemoveAvatar}>
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Remover
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

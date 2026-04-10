@@ -44,7 +44,7 @@ export function ProtocoloDetalhesTab({ form, setForm, clientes, veiculos, onNewC
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div><Label>Data de entrada</Label><Input type="date" value={form.data_entrada} onChange={(e) => setForm({ ...form, data_entrada: e.target.value })} /></div>
         <div><Label>Hora de entrada</Label><Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} /></div>
-        <div><Label>Kilometragem</Label><Input value={form.km} onChange={(e) => setForm({ ...form, km: e.target.value })} /></div>
+        <div><Label>Quilometragem</Label><Input value={form.km} onChange={(e) => setForm({ ...form, km: e.target.value })} /></div>
         <div><Label>Previsão de entrega</Label><Input type="date" value={form.previsao_entrega} onChange={(e) => setForm({ ...form, previsao_entrega: e.target.value })} /></div>
       </div>
 

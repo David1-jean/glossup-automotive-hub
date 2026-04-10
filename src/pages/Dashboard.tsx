@@ -155,10 +155,10 @@ const Dashboard = () => {
         <div className="grid gap-6 p-6 lg:grid-cols-[1.5fr_0.9fr] lg:p-8">
           <div className="space-y-5">
             <div>
-              <p className="section-heading">Visao geral</p>
-              <h1 className="mt-2 text-3xl font-bold tracking-tight">Operacao da oficina em tempo real</h1>
+              <p className="section-heading">Visão geral</p>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight">Operação da oficina em tempo real</h1>
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                Acompanhe ordens, funil comercial e resultado financeiro em uma visao unica, com foco em decisao rapida e leitura clara.
+                Acompanhe ordens, funil comercial e resultado financeiro em uma visão única, com foco em decisão rápida e leitura clara.
               </p>
             </div>
 

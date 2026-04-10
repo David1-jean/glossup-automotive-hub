@@ -2,8 +2,9 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useTheme } from "@/hooks/useTheme";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,7 +47,7 @@ export function AppLayout() {
       if (!profile?.oficina_id) return null;
       const { data, error } = await supabase
         .from('oficinas')
-        .select('nome_fantasia')
+        .select('nome')
         .eq('id', profile.oficina_id)
         .single();
       
@@ -86,9 +87,15 @@ export function AppLayout() {
 
                 <div className="flex items-center justify-between gap-3 lg:justify-end">
                   <div className="min-w-0 lg:text-right">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{oficina?.nome_fantasia || "Oficina"}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{oficina?.nome || "Oficina"}</p>
                     <p className="truncate text-sm font-medium text-slate-200">{pageTitle}</p>
                   </div>
+                  <Avatar className="h-9 w-9 border border-white/10">
+                    <AvatarImage src={profile?.avatar_url || undefined} alt="Perfil" />
+                    <AvatarFallback className="bg-white/10 text-slate-300">
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
                   <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-xl border border-white/10 bg-white/[0.06] text-slate-300 transition-colors hover:bg-white/10 hover:text-white">
                     {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5 text-sky-300" />}
                   </Button>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Upload, User } from "lucide-react";
 
 interface ValorHora {
   id: string;
@@ -24,10 +25,18 @@ interface Servico {
 }
 
 const Configuracoes = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [valoresHora, setValoresHora] = useState<ValorHora[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [searchServico, setSearchServico] = useState("");
+
+  // Profile state
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Valor Hora dialog
   const [vhDialogOpen, setVhDialogOpen] = useState(false);
@@ -54,7 +63,67 @@ const Configuracoes = () => {
 
   useEffect(() => { fetchData(); }, [profile?.oficina_id]);
 
+  useEffect(() => {
+    if (profile) {
+      setProfileName(profile.full_name || "");
+      setProfileEmail(profile.email || "");
+      setAvatarUrl(profile.avatar_url || null);
+    }
+  }, [profile]);
+
   const filteredServicos = servicos.filter((s) => s.nome.toLowerCase().includes(searchServico.toLowerCase()));
+
+  // Profile handlers
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/avatar.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("profile-avatars")
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("profile-avatars")
+        .getPublicUrl(path);
+
+      const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast.success("Foto de perfil atualizada");
+    } catch (err: any) {
+      console.error("Avatar upload error:", err);
+      toast.error("Erro ao enviar foto de perfil");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    setSavingProfile(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ full_name: profileName.trim() || null })
+      .eq("id", user.id);
+
+    if (error) toast.error("Erro ao salvar perfil");
+    else toast.success("Perfil atualizado");
+    setSavingProfile(false);
+  };
 
   // Valor Hora CRUD
   const handleVhOpen = (item?: ValorHora) => {
@@ -128,11 +197,61 @@ const Configuracoes = () => {
     <div className="space-y-6 animate-fade-in">
       <h1 className="text-2xl font-bold">Configurações</h1>
 
-      <Tabs defaultValue="valor-hora">
+      <Tabs defaultValue="perfil">
         <TabsList className="bg-secondary">
+          <TabsTrigger value="perfil">Perfil</TabsTrigger>
           <TabsTrigger value="valor-hora">Valor x Hora</TabsTrigger>
           <TabsTrigger value="servicos">Serviços</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="perfil" className="space-y-6 mt-4">
+          <div className="glass-card p-6 max-w-lg">
+            <h2 className="text-lg font-semibold mb-4">Meu Perfil</h2>
+            <div className="flex items-center gap-4 mb-6">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={avatarUrl || undefined} alt="Foto de perfil" />
+                <AvatarFallback className="text-2xl">
+                  <User className="h-8 w-8" />
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  {uploadingAvatar ? "Enviando..." : "Alterar foto"}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-1">JPG, PNG ou WebP. Máximo 5MB.</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label>Nome completo</Label>
+                <Input value={profileName} onChange={(e) => setProfileName(e.target.value)} placeholder="Seu nome" />
+              </div>
+              <div>
+                <Label>E-mail</Label>
+                <Input value={profileEmail} disabled className="opacity-60" />
+                <p className="text-xs text-muted-foreground mt-1">O e-mail não pode ser alterado aqui.</p>
+              </div>
+              <div className="flex justify-end">
+                <Button onClick={handleSaveProfile} disabled={savingProfile}>
+                  {savingProfile ? "Salvando..." : "Salvar perfil"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
 
         <TabsContent value="valor-hora" className="space-y-4 mt-4">
           <div className="flex justify-end">

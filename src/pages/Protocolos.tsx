@@ -317,7 +317,7 @@ const Protocolos = () => {
                 <div class="field"><span class="field-label">Cor</span><div class="field-value">${safeText(veiculo?.cor)}</div></div>
                 <div class="field"><span class="field-label">Combustível</span><div class="field-value">${safeText(veiculo?.combustivel)}</div></div>
                 <div class="field"><span class="field-label">Chassi</span><div class="field-value">${safeText(veiculo?.chassi)}</div></div>
-                <div class="field"><span class="field-label">Kilometragem</span><div class="field-value">${safeText(form.km)}</div></div>
+                <div class="field"><span class="field-label">Quilometragem</span><div class="field-value">${safeText(form.km)}</div></div>
               </div>
             </section>
 

@@ -16,7 +16,7 @@ interface Servico {
   adicional_sem_pintura?: number;
   hora_linear?: boolean;
   horas: number;
-  valor: number;
+  valor?: number | null;
 }
 
 interface Props {
@@ -40,7 +40,7 @@ export function ProtocoloFunilariaTab({ servicos, setServicos, servicosCadastrad
     if (exists) {
       setServicos(servicos.filter((s) => !(s.servico_id === svc.id && s.tipo === tipo)));
     } else {
-      setServicos([...servicos, { servico_id: svc.id, nome: svc.nome, tipo, tamanho: "P", adicional_sem_pintura: 0, hora_linear: false, horas: 0, valor: 0 }]);
+      setServicos([...servicos, { servico_id: svc.id, nome: svc.nome, tipo, tamanho: "P", adicional_sem_pintura: 0, hora_linear: false, horas: 0, valor: null }]);
     }
   };
 
@@ -115,8 +115,13 @@ export function ProtocoloFunilariaTab({ servicos, setServicos, servicosCadastrad
                     <Input type="number" value={svc.horas} onChange={(e) => updateServico(realIdx, "horas", Number(e.target.value))} />
                   </div>
                   <div>
-                    <Label className="text-xs">Valor</Label>
-                    <Input type="number" value={svc.valor} onChange={(e) => updateServico(realIdx, "valor", Number(e.target.value))} />
+                    <Label className="text-xs">Valor do serviço</Label>
+                    <Input
+                      type="number"
+                      placeholder="Ex: 350"
+                      value={svc.valor ?? ""}
+                      onChange={(e) => updateServico(realIdx, "valor", e.target.value === "" ? null : Number(e.target.value))}
+                    />
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

@@ -11,7 +11,7 @@ interface Servico {
   nome: string;
   tipo: string;
   horas: number;
-  valor: number;
+  valor?: number | null;
 }
 
 interface Props {
@@ -34,7 +34,7 @@ export function ProtocoloServicosTab({ servicos, setServicos, servicosCadastrado
     if (exists) {
       setServicos(servicos.filter((s) => !(s.servico_id === svc.id && s.tipo === tipo)));
     } else {
-      setServicos([...servicos, { servico_id: svc.id, nome: svc.nome, tipo, horas: 0, valor: 0 }]);
+      setServicos([...servicos, { servico_id: svc.id, nome: svc.nome, tipo, horas: 0, valor: null }]);
     }
   };
 
@@ -86,19 +86,28 @@ export function ProtocoloServicosTab({ servicos, setServicos, servicosCadastrado
           {currentServicos.map((svc, idx) => {
             const realIdx = servicos.findIndex((s) => s === svc);
             return (
-              <div key={idx} className="flex items-center gap-3 p-3 rounded-md border border-border">
-                <span className="text-sm flex-1 font-medium">{svc.nome}</span>
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs">Horas</Label>
-                  <Input type="number" className="w-20" value={svc.horas} onChange={(e) => updateServico(realIdx, "horas", Number(e.target.value))} />
+              <div key={idx} className="p-3 rounded-md border border-border space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm flex-1 font-medium">{svc.nome}</span>
+                  <Button variant="ghost" size="icon" onClick={() => setServicos(servicos.filter((_, i) => i !== realIdx))}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs">Valor</Label>
-                  <Input type="number" className="w-24" value={svc.valor} onChange={(e) => updateServico(realIdx, "valor", Number(e.target.value))} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">Horas</Label>
+                    <Input type="number" value={svc.horas} onChange={(e) => updateServico(realIdx, "horas", Number(e.target.value))} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Valor do serviço</Label>
+                    <Input
+                      type="number"
+                      placeholder="Ex: 350"
+                      value={svc.valor ?? ""}
+                      onChange={(e) => updateServico(realIdx, "valor", e.target.value === "" ? null : Number(e.target.value))}
+                    />
+                  </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setServicos(servicos.filter((_, i) => i !== realIdx))}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
               </div>
             );
           })}

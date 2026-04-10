@@ -463,12 +463,12 @@ const Protocolos = () => {
     const inserts = [];
     if (servicos.length > 0) {
       inserts.push(supabase.from("protocolo_servicos").insert(
-        servicos.map((s) => ({ protocolo_id: protocoloId, servico_id: s.servico_id || null, nome: s.nome, tipo: s.tipo, tamanho: s.tamanho || null, adicional_sem_pintura: s.adicional_sem_pintura || 0, hora_linear: s.hora_linear || false, horas: s.horas || 0, valor: s.valor || 0 }))
+        servicos.map((s) => ({ protocolo_id: protocoloId, servico_id: s.servico_id || null, nome: s.nome, tipo: s.tipo, tamanho: s.tamanho || null, adicional_sem_pintura: s.adicional_sem_pintura || 0, hora_linear: s.hora_linear || false, horas: s.horas || 0, valor: s.valor ?? null }))
       ));
     }
     if (pecas.length > 0) {
       inserts.push(supabase.from("protocolo_pecas").insert(
-        pecas.map((p) => ({ protocolo_id: protocoloId, nome: p.nome, fracao: p.fracao, qtd_tinta_p: p.qtd_tinta_p, qtd_tinta_m: p.qtd_tinta_m, qtd_tinta_g: p.qtd_tinta_g, qtd_verniz_p: p.qtd_verniz_p, qtd_verniz_m: p.qtd_verniz_m, qtd_verniz_g: p.qtd_verniz_g, sinonimos: p.sinonimos, imagem_url: p.imagem_url, valor: p.valor || 0 }))
+        pecas.map((p) => ({ protocolo_id: protocoloId, nome: p.nome, fracao: p.fracao, qtd_tinta_p: p.qtd_tinta_p, qtd_tinta_m: p.qtd_tinta_m, qtd_tinta_g: p.qtd_tinta_g, qtd_verniz_p: p.qtd_verniz_p, qtd_verniz_m: p.qtd_verniz_m, qtd_verniz_g: p.qtd_verniz_g, sinonimos: p.sinonimos, imagem_url: p.imagem_url, valor: p.valor ?? null }))
       ));
     }
     if (fotos.length > 0) {
@@ -534,12 +534,12 @@ const Protocolos = () => {
     setForm({ ...form, cliente_id: proposta.cliente_id || "", veiculo_id: proposta.veiculo_id || "" });
     const importedServicos = (proposta.itens_proposta || [])
       .filter((it: any) => it.tipo === "servico")
-      .map((it: any) => ({ nome: it.descricao, tipo: "servico", horas: it.horas || 0, valor: it.valor || 0 }));
+      .map((it: any) => ({ nome: it.descricao, tipo: "servico", horas: it.horas || 0, valor: it.valor ?? null }));
     const importedPecas = (proposta.itens_proposta || [])
       .filter((it: any) => it.tipo === "peca")
       .map((it: any) => ({
         nome: it.descricao, fracao: 1, qtd_tinta_p: 0, qtd_tinta_m: 0, qtd_tinta_g: 0,
-        qtd_verniz_p: 0, qtd_verniz_m: 0, qtd_verniz_g: 0, sinonimos: "", imagem_url: "", valor: it.valor || 0,
+        qtd_verniz_p: 0, qtd_verniz_m: 0, qtd_verniz_g: 0, sinonimos: "", imagem_url: "", valor: it.valor ?? null,
       }));
     setServicos([...servicos, ...importedServicos]);
     setPecas([...pecas, ...importedPecas]);

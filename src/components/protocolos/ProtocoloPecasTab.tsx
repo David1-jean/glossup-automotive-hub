@@ -16,7 +16,7 @@ interface Peca {
   qtd_verniz_g: number;
   sinonimos: string;
   imagem_url: string;
-  valor: number;
+  valor?: number | null;
 }
 
 interface Props {
@@ -26,7 +26,7 @@ interface Props {
 
 const emptyPeca: Peca = {
   nome: "", fracao: 1, qtd_tinta_p: 0, qtd_tinta_m: 0, qtd_tinta_g: 0,
-  qtd_verniz_p: 0, qtd_verniz_m: 0, qtd_verniz_g: 0, sinonimos: "", imagem_url: "", valor: 0,
+  qtd_verniz_p: 0, qtd_verniz_m: 0, qtd_verniz_g: 0, sinonimos: "", imagem_url: "", valor: null,
 };
 
 export function ProtocoloPecasTab({ pecas, setPecas }: Props) {
@@ -53,7 +53,7 @@ export function ProtocoloPecasTab({ pecas, setPecas }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div><Label className="text-xs">Nome</Label><Input value={peca.nome} onChange={(e) => updatePeca(i, "nome", e.target.value)} /></div>
             <div><Label className="text-xs">Fração</Label><Input type="number" value={peca.fracao} onChange={(e) => updatePeca(i, "fracao", Number(e.target.value))} /></div>
-            <div><Label className="text-xs">Valor</Label><Input type="number" value={peca.valor} onChange={(e) => updatePeca(i, "valor", Number(e.target.value))} /></div>
+            <div><Label className="text-xs">Valor da peça</Label><Input type="number" placeholder="Ex: 120" value={peca.valor ?? ""} onChange={(e) => updatePeca(i, "valor", e.target.value === "" ? null : Number(e.target.value))} /></div>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
             <div><Label className="text-xs">Tinta P</Label><Input type="number" value={peca.qtd_tinta_p} onChange={(e) => updatePeca(i, "qtd_tinta_p", Number(e.target.value))} /></div>

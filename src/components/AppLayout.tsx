@@ -15,25 +15,25 @@ const pageTitles: Record<string, string> = {
   "/propostas": "Propostas",
   "/protocolos": "Protocolos",
   "/clientes": "Clientes",
-  "/veiculos": "Veiculos",
+  "/veiculos": "Veículos",
   "/agenda": "Agenda",
   "/financeiro": "Financeiro",
   "/estoque": "Estoque",
-  "/relatorios": "Relatorios",
-  "/configuracoes": "Configuracoes",
+  "/relatorios": "Relatórios",
+  "/configuracoes": "Configurações",
   "/admin": "Painel Master",
 };
 
 const primaryMenuItems = [
-  { title: "Veiculos", url: "/veiculos" },
+  { title: "Veículos", url: "/veiculos" },
   { title: "Estoque", url: "/estoque" },
   { title: "Financeiro", url: "/financeiro" },
   { title: "Clientes", url: "/clientes" },
   { title: "Agenda", url: "/agenda" },
   { title: "Propostas", url: "/propostas" },
   { title: "Protocolos", url: "/protocolos" },
-  { title: "Relatorios", url: "/relatorios" },
-  { title: "Configuracoes", url: "/configuracoes" },
+  { title: "Relatórios", url: "/relatorios" },
+  { title: "Configurações", url: "/configuracoes" },
 ];
 
 export function AppLayout() {
@@ -57,7 +57,7 @@ export function AppLayout() {
     enabled: !!profile?.oficina_id,
   });
 
-  const pageTitle = pageTitles[location.pathname] || "Gestao da oficina";
+  const pageTitle = pageTitles[location.pathname] || "Gestão da oficina";
   const headerMenuItems = roles.includes("admin_master")
     ? [...primaryMenuItems, { title: "Painel Master", url: "/admin" }]
     : primaryMenuItems;

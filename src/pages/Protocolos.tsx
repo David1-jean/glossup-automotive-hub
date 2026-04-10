@@ -93,6 +93,7 @@ const Protocolos = () => {
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
   const [showPrintValues, setShowPrintValues] = useState(true);
+  const [showPrintTermo, setShowPrintTermo] = useState(false);
 
   // Sub-entity states
   const [servicos, setServicos] = useState<any[]>([]);
@@ -256,6 +257,17 @@ const Protocolos = () => {
             .header { align-items: flex-start; border-bottom: 2px solid #111827; padding-bottom: 16px; margin-bottom: 16px; }
             .brand { display: flex; gap: 16px; align-items: flex-start; }
             .logo { width: 92px; height: 92px; border: 1px solid #d1d5db; border-radius: 8px; object-fit: contain; background: #fff; }
+            .foto-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .foto-card { border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden; }
+            .foto-card img { width: 100%; height: 180px; object-fit: cover; }
+            .foto-card .foto-info { padding: 8px 10px; font-size: 12px; }
+            .foto-card .foto-info strong { display: block; margin-bottom: 2px; }
+            .checklist-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+            .checklist-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; }
+            .checklist-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
+            .checklist-ok { background: #dcfce7; color: #16a34a; }
+            .checklist-pending { background: #fef3c7; color: #d97706; }
+            .termo-section { white-space: pre-wrap; font-family: monospace; font-size: 13px; border: 1px solid #d1d5db; border-radius: 8px; padding: 16px; }
             .title { font-size: 26px; font-weight: 700; margin: 0 0 10px; }
             .meta { text-align: right; min-width: 180px; }
             .meta strong { display: block; font-size: 14px; color: #374151; }
@@ -365,6 +377,35 @@ const Protocolos = () => {
                 </div>
               </div>` : ""}
 
+            ${fotos.length > 0 ? `
+            <section class="section">
+              <h2>Registro fotográfico</h2>
+              <div class="foto-grid">
+                ${fotos.map((f) => `
+                  <div class="foto-card">
+                    <img src="${escapeHtml(f.url)}" alt="${safeText(f.peca)}" crossorigin="anonymous" />
+                    <div class="foto-info">
+                      ${f.peca ? `<strong>Peça: ${safeText(f.peca)}</strong>` : ""}
+                      ${f.observacoes ? `<span>${safeText(f.observacoes)}</span>` : ""}
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            </section>` : ""}
+
+            ${checklist.length > 0 ? `
+            <section class="section">
+              <h2>Checklist de vistoria</h2>
+              <div class="checklist-grid">
+                ${checklist.map((c) => `
+                  <div class="checklist-item">
+                    <span style="flex:1">${safeText(c.item)}</span>
+                    <span class="checklist-badge ${c.condicao === 'ok' ? 'checklist-ok' : 'checklist-pending'}">${c.condicao === 'ok' ? 'OK' : 'Pendente'}</span>
+                  </div>
+                `).join("")}
+              </div>
+            </section>` : ""}
+
             <section class="section footer-note">
               <div>Previsão de entrega: ${safeText(form.previsao_entrega ? new Date(`${form.previsao_entrega}T00:00:00`).toLocaleDateString("pt-BR") : "-")}${form.hora_entrega ? ` às ${safeText(form.hora_entrega)}` : ""}</div>
               <div>Forma de pagamento: ${safeText(form.forma_pagamento)}</div>
@@ -378,6 +419,13 @@ const Protocolos = () => {
                 <div class="signature-line">Data: ${safeText(assinaturaData)}</div>
               </div>
             </div>
+
+            ${showPrintTermo && form.termo_autorizacao ? `
+            <div style="page-break-before: always;"></div>
+            <section class="section" style="margin-top: 24px;">
+              <h2>Termo de Autorização de Serviço</h2>
+              <div class="termo-section">${escapeHtml(form.termo_autorizacao)}</div>
+            </section>` : ""}
           </div>
           <script>
             window.onload = function() {
@@ -667,9 +715,15 @@ const Protocolos = () => {
           </Tabs>
 
           <div className="flex flex-col gap-3 mt-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <Checkbox id="show-print-values" checked={showPrintValues} onCheckedChange={(checked) => setShowPrintValues(checked === true)} />
-              <Label htmlFor="show-print-values" className="text-sm">Exibir valores na impressão</Label>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox id="show-print-values" checked={showPrintValues} onCheckedChange={(checked) => setShowPrintValues(checked === true)} />
+                <Label htmlFor="show-print-values" className="text-sm">Exibir valores na impressão</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox id="show-print-termo" checked={showPrintTermo} onCheckedChange={(checked) => setShowPrintTermo(checked === true)} />
+                <Label htmlFor="show-print-termo" className="text-sm">Imprimir termo de autorização</Label>
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={handlePrint}>

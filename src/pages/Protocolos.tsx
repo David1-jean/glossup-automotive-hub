@@ -107,7 +107,7 @@ const Protocolos = () => {
   const [newVeiculoModelo, setNewVeiculoModelo] = useState("");
   const [newVeiculoPlaca, setNewVeiculoPlaca] = useState("");
 
-  // Import proposta
+  // Importar proposta
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedProposta, setSelectedProposta] = useState("");
 
@@ -129,7 +129,7 @@ const Protocolos = () => {
     ]);
 
     if (svcRes.error) {
-      console.error("[Protocolos] erro ao carregar servicos:", svcRes.error);
+      console.error("[Protocolos] erro ao carregar serviços:", svcRes.error);
       setServicosCadastrados([]);
       setServicosCadastradosError("Erro ao carregar os serviços cadastrados.");
     } else {
@@ -534,17 +534,23 @@ const Protocolos = () => {
     setForm({ ...form, cliente_id: proposta.cliente_id || "", veiculo_id: proposta.veiculo_id || "" });
     const importedServicos = (proposta.itens_proposta || [])
       .filter((it: any) => it.tipo === "servico")
-      .map((it: any) => ({ nome: it.descricao, tipo: "servico", horas: it.horas || 0, valor: it.valor ?? null }));
+      .map((it: any) => ({
+        nome: it.descricao,
+        tipo: "servico",
+        horas: (Number(it.horas) || 0) * (Number(it.quantidade) || 1),
+        valor: it.valor == null ? null : (Number(it.valor) || 0) * (Number(it.quantidade) || 1),
+      }));
     const importedPecas = (proposta.itens_proposta || [])
       .filter((it: any) => it.tipo === "peca")
       .map((it: any) => ({
         nome: it.descricao, fracao: 1, qtd_tinta_p: 0, qtd_tinta_m: 0, qtd_tinta_g: 0,
-        qtd_verniz_p: 0, qtd_verniz_m: 0, qtd_verniz_g: 0, sinonimos: "", imagem_url: "", valor: it.valor ?? null,
+        qtd_verniz_p: 0, qtd_verniz_m: 0, qtd_verniz_g: 0, sinonimos: "", imagem_url: "",
+        valor: it.valor == null ? null : (Number(it.valor) || 0) * (Number(it.quantidade) || 1),
       }));
     setServicos([...servicos, ...importedServicos]);
     setPecas([...pecas, ...importedPecas]);
     setImportDialogOpen(false);
-    toast.success("Orçamento importado");
+    toast.success("Proposta importada");
   };
 
   return (
@@ -615,14 +621,14 @@ const Protocolos = () => {
               <TabsTrigger value="detalhes">Detalhes</TabsTrigger>
               <TabsTrigger value="anotacoes">Anotações</TabsTrigger>
               <TabsTrigger value="laudo">Laudo/Termo</TabsTrigger>
-              <TabsTrigger value="funilaria">Serviços Funilaria e Pintura</TabsTrigger>
+              <TabsTrigger value="funilaria">Serviços de funilaria e pintura</TabsTrigger>
               <TabsTrigger value="servicos">Serviços</TabsTrigger>
               <TabsTrigger value="pecas">Peças</TabsTrigger>
             </TabsList>
             
             <div className="flex justify-center mt-3 mb-2">
               <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)} className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white">
-                Importar orçamento
+                Importar proposta
               </Button>
             </div>
 
@@ -655,7 +661,7 @@ const Protocolos = () => {
           <div className="flex flex-col gap-3 mt-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <Checkbox id="show-print-values" checked={showPrintValues} onCheckedChange={(checked) => setShowPrintValues(checked === true)} />
-              <Label htmlFor="show-print-values" className="text-sm">Exibir valores</Label>
+              <Label htmlFor="show-print-values" className="text-sm">Exibir valores na impressão</Label>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={handlePrint}>
@@ -671,10 +677,10 @@ const Protocolos = () => {
       {/* Quick Add Dialogs */}
       <Dialog open={newClienteOpen} onOpenChange={setNewClienteOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Adicionar Novo Cliente</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Adicionar novo cliente</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
-              <label className="text-sm font-medium mb-1 block">Nome do Cliente</label>
+              <label className="text-sm font-medium mb-1 block">Nome do cliente</label>
               <Input placeholder="Ex: João da Silva" value={newClienteNome} onChange={(e) => setNewClienteNome(e.target.value)} />
             </div>
             <div className="flex justify-end gap-2">
@@ -687,7 +693,7 @@ const Protocolos = () => {
 
       <Dialog open={newVeiculoOpen} onOpenChange={setNewVeiculoOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Adicionar Novo Veículo</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Adicionar novo veículo</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
               <label className="text-sm font-medium mb-1 block">Modelo</label>
@@ -708,7 +714,7 @@ const Protocolos = () => {
       {/* Import Proposta Dialog */}
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Importar Orçamento</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Importar proposta</DialogTitle></DialogHeader>
           <Select value={selectedProposta} onValueChange={setSelectedProposta}>
             <SelectTrigger><SelectValue placeholder="Selecione uma proposta" /></SelectTrigger>
             <SelectContent>

@@ -49,7 +49,7 @@ export function ProtocoloServicosTab({ servicos, setServicos, servicosCadastrado
   return (
     <div className="space-y-4">
       <Button type="button" variant="outline" onClick={() => setShowPicker((current) => !current)}>
-        <Plus className="h-4 w-4 mr-2" /> Adicionar Serviços
+        <Plus className="h-4 w-4 mr-2" /> Adicionar serviços
       </Button>
 
       {showPicker && (
@@ -70,7 +70,7 @@ export function ProtocoloServicosTab({ servicos, setServicos, servicosCadastrado
                   />
                   <span className="flex-1 text-sm">{svc.nome}</span>
                   <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    {svc.oficina_id ? "Oficina" : "Global"}
+                    {svc.oficina_id ? "Oficina" : "Padrão"}
                   </span>
                 </label>
               ))
@@ -99,14 +99,15 @@ export function ProtocoloServicosTab({ servicos, setServicos, servicosCadastrado
                     <Input type="number" value={svc.horas} onChange={(e) => updateServico(realIdx, "horas", Number(e.target.value))} />
                   </div>
                   <div>
-                    <Label className="text-xs">Valor do serviço</Label>
-                    <Input
-                      type="number"
-                      placeholder="Ex: 350"
-                      value={svc.valor ?? ""}
-                      onChange={(e) => updateServico(realIdx, "valor", e.target.value === "" ? null : Number(e.target.value))}
-                    />
-                  </div>
+                     <Label className="text-xs">Valor do serviço</Label>
+                     <Input
+                       type="number"
+                       placeholder="Ex: 350"
+                       value={svc.valor ?? ""}
+                       onChange={(e) => updateServico(realIdx, "valor", e.target.value === "" ? null : Number(e.target.value))}
+                     />
+                     <p className="mt-1 text-[11px] text-muted-foreground">Esse valor aparece na impressão da OS.</p>
+                   </div>
                 </div>
               </div>
             );

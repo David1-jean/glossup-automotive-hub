@@ -11,9 +11,9 @@ export function ProtocoloAnotacoesTab({ form, setForm }: Props) {
   return (
     <Tabs defaultValue="relato" className="w-full">
       <TabsList className="w-full">
-        <TabsTrigger value="relato" className="flex-1">Relato Cliente</TabsTrigger>
-        <TabsTrigger value="obs_os" className="flex-1">Obs OS</TabsTrigger>
-        <TabsTrigger value="obs_int" className="flex-1">Obs Int</TabsTrigger>
+        <TabsTrigger value="relato" className="flex-1">Relato do cliente</TabsTrigger>
+        <TabsTrigger value="obs_os" className="flex-1">Observações da OS</TabsTrigger>
+        <TabsTrigger value="obs_int" className="flex-1">Observações internas</TabsTrigger>
       </TabsList>
       <TabsContent value="relato">
         <Label>Relato do Cliente</Label>
@@ -24,7 +24,7 @@ export function ProtocoloAnotacoesTab({ form, setForm }: Props) {
         <Textarea rows={8} value={form.obs_os} onChange={(e) => setForm({ ...form, obs_os: e.target.value })} placeholder="Observações da ordem de serviço..." />
       </TabsContent>
       <TabsContent value="obs_int">
-        <Label>Observações Internas</Label>
+        <Label>Observações internas</Label>
         <Textarea rows={8} value={form.obs_int} onChange={(e) => setForm({ ...form, obs_int: e.target.value })} placeholder="Observações internas (não visíveis ao cliente)..." />
       </TabsContent>
     </Tabs>

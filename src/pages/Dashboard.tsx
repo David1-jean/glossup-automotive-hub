@@ -24,15 +24,15 @@ import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
 import { Button } from "@/components/ui/button";
 
 const navCards = [
-  { title: "Propostas", description: "Orcamentos e propostas", icon: FileText, url: "/propostas" },
-  { title: "Protocolos", description: "Ordens de servico", icon: ClipboardList, url: "/protocolos" },
+  { title: "Propostas", description: "Orçamentos e propostas", icon: FileText, url: "/propostas" },
+  { title: "Protocolos", description: "Ordens de serviço", icon: ClipboardList, url: "/protocolos" },
   { title: "Clientes", description: "Base de clientes", icon: Users, url: "/clientes" },
-  { title: "Veiculos", description: "Cadastro de veiculos", icon: Car, url: "/veiculos" },
+  { title: "Veículos", description: "Cadastro de veículos", icon: Car, url: "/veiculos" },
   { title: "Agenda", description: "Agendamentos", icon: Calendar, url: "/agenda" },
-  { title: "Financeiro", description: "Entradas e saidas", icon: DollarSign, url: "/financeiro" },
-  { title: "Estoque", description: "Pecas e materiais", icon: Package, url: "/estoque" },
-  { title: "Relatorios", description: "Analises e dados", icon: BarChart3, url: "/relatorios" },
-  { title: "Configuracoes", description: "Servicos e valores", icon: Settings, url: "/configuracoes" },
+  { title: "Financeiro", description: "Entradas e saídas", icon: DollarSign, url: "/financeiro" },
+  { title: "Estoque", description: "Peças e materiais", icon: Package, url: "/estoque" },
+  { title: "Relatórios", description: "Análises e dados", icon: BarChart3, url: "/relatorios" },
+  { title: "Configurações", description: "Serviços e valores", icon: Settings, url: "/configuracoes" },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
@@ -136,9 +136,9 @@ const Dashboard = () => {
 
   const metricCards = [
     { label: "Clientes ativos", value: metrics.clientes, icon: Users, helper: "Base cadastrada" },
-    { label: "Veiculos", value: metrics.veiculos, icon: Car, helper: "Frota vinculada" },
+    { label: "Veículos", value: metrics.veiculos, icon: Car, helper: "Frota vinculada" },
     { label: "Propostas", value: metrics.propostas, icon: FileText, helper: "Funil comercial" },
-    { label: "Ordens de servico", value: metrics.protocolos, icon: ClipboardList, helper: "Historico operacional" },
+    { label: "Ordens de serviço", value: metrics.protocolos, icon: ClipboardList, helper: "Histórico operacional" },
   ];
 
   const saldo = totals.entradas - totals.saidas;
@@ -184,7 +184,7 @@ const Dashboard = () => {
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button onClick={() => navigate("/protocolos")} className="h-11 rounded-xl px-5">
-                Abrir ordens de servico
+                Abrir ordens de serviço
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button variant="outline" onClick={() => navigate("/financeiro")} className="h-11 rounded-xl px-5">

@@ -273,14 +273,14 @@ const Propostas = () => {
                     <Input placeholder="Descrição" value={item.descricao} onChange={(e) => updateItem(idx, "descricao", e.target.value)} className="text-xs" />
                   </div>
                   <div className="col-span-1">
-                    <Input type="number" placeholder="Qtd" value={item.quantidade} onChange={(e) => updateItem(idx, "quantidade", parseFloat(e.target.value) || 0)} className="text-xs" />
-                  </div>
-                  <div className="col-span-1">
-                    <Input type="number" placeholder="Hrs" value={item.horas} onChange={(e) => updateItem(idx, "horas", parseFloat(e.target.value) || 0)} className="text-xs" />
-                  </div>
-                  <div className="col-span-2">
-                    <Input type="number" placeholder="Valor" value={item.valor} onChange={(e) => updateItem(idx, "valor", parseFloat(e.target.value) || 0)} className="text-xs" />
-                  </div>
+                     <Input type="number" placeholder="Qtd." value={item.quantidade} onChange={(e) => updateItem(idx, "quantidade", parseFloat(e.target.value) || 0)} className="text-xs" />
+                   </div>
+                   <div className="col-span-1">
+                     <Input type="number" placeholder="Horas" value={item.horas} onChange={(e) => updateItem(idx, "horas", parseFloat(e.target.value) || 0)} className="text-xs" />
+                   </div>
+                   <div className="col-span-2">
+                     <Input type="number" placeholder="Valor unitário" value={item.valor} onChange={(e) => updateItem(idx, "valor", parseFloat(e.target.value) || 0)} className="text-xs" />
+                   </div>
                   <div className="col-span-2 flex gap-1">
                     <span className="text-xs font-mono self-center">R$ {(item.valor * item.quantidade).toFixed(2)}</span>
                     {itens.length > 1 && (

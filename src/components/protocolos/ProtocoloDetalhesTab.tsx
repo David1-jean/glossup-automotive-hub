@@ -42,18 +42,18 @@ export function ProtocoloDetalhesTab({ form, setForm, clientes, veiculos, onNewC
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div><Label>Data Entrada</Label><Input type="date" value={form.data_entrada} onChange={(e) => setForm({ ...form, data_entrada: e.target.value })} /></div>
-        <div><Label>Hora Entrada</Label><Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} /></div>
+        <div><Label>Data de entrada</Label><Input type="date" value={form.data_entrada} onChange={(e) => setForm({ ...form, data_entrada: e.target.value })} /></div>
+        <div><Label>Hora de entrada</Label><Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} /></div>
         <div><Label>Kilometragem</Label><Input value={form.km} onChange={(e) => setForm({ ...form, km: e.target.value })} /></div>
-        <div><Label>Previsão Entrega</Label><Input type="date" value={form.previsao_entrega} onChange={(e) => setForm({ ...form, previsao_entrega: e.target.value })} /></div>
+        <div><Label>Previsão de entrega</Label><Input type="date" value={form.previsao_entrega} onChange={(e) => setForm({ ...form, previsao_entrega: e.target.value })} /></div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div><Label>Hora Entrega</Label><Input type="time" value={form.hora_entrega} onChange={(e) => setForm({ ...form, hora_entrega: e.target.value })} /></div>
-        <div><Label>Data Fechamento</Label><Input type="date" value={form.data_fechamento} onChange={(e) => setForm({ ...form, data_fechamento: e.target.value })} /></div>
-        <div><Label>Hora Fechamento</Label><Input type="time" value={form.hora_fechamento} onChange={(e) => setForm({ ...form, hora_fechamento: e.target.value })} /></div>
+        <div><Label>Hora de entrega</Label><Input type="time" value={form.hora_entrega} onChange={(e) => setForm({ ...form, hora_entrega: e.target.value })} /></div>
+        <div><Label>Data de fechamento</Label><Input type="date" value={form.data_fechamento} onChange={(e) => setForm({ ...form, data_fechamento: e.target.value })} /></div>
+        <div><Label>Hora de fechamento</Label><Input type="time" value={form.hora_fechamento} onChange={(e) => setForm({ ...form, hora_fechamento: e.target.value })} /></div>
         <div>
-          <Label>Forma Pagamento</Label>
+          <Label>Forma de pagamento</Label>
           <Select value={form.forma_pagamento} onValueChange={(v) => setForm({ ...form, forma_pagamento: v })}>
             <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
             <SelectContent>{FORMAS_PAGAMENTO.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
@@ -72,7 +72,7 @@ export function ProtocoloDetalhesTab({ form, setForm, clientes, veiculos, onNewC
           </Select>
         </div>
         <div>
-          <Label>Corresponsável Financeiro</Label>
+          <Label>Corresponsável financeiro</Label>
           <div className="flex gap-1">
             <Select value={form.corresponsavel_id} onValueChange={(v) => setForm({ ...form, corresponsavel_id: v })}>
               <SelectTrigger className="flex-1"><SelectValue placeholder="Selecione" /></SelectTrigger>

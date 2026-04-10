@@ -53,7 +53,7 @@ export function ProtocoloFunilariaTab({ servicos, setServicos, servicosCadastrad
   return (
     <div className="space-y-4">
       <Button type="button" variant="outline" onClick={() => setShowPicker((current) => !current)}>
-        <Plus className="h-4 w-4 mr-2" /> Adicionar Serviços
+        <Plus className="h-4 w-4 mr-2" /> Adicionar serviços
       </Button>
 
       {showPicker && (
@@ -71,7 +71,7 @@ export function ProtocoloFunilariaTab({ servicos, setServicos, servicosCadastrad
                   <Checkbox checked={!!servicos.find((s) => s.servico_id === svc.id && s.tipo === tipo)} onCheckedChange={() => toggleServico(svc)} />
                   <span className="flex-1 text-sm">{svc.nome}</span>
                   <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    {svc.oficina_id ? "Oficina" : "Global"}
+                    {svc.oficina_id ? "Oficina" : "Padrão"}
                   </span>
                 </label>
               ))
@@ -116,26 +116,27 @@ export function ProtocoloFunilariaTab({ servicos, setServicos, servicosCadastrad
                   </div>
                   <div>
                     <Label className="text-xs">Valor do serviço</Label>
-                    <Input
-                      type="number"
-                      placeholder="Ex: 350"
-                      value={svc.valor ?? ""}
-                      onChange={(e) => updateServico(realIdx, "valor", e.target.value === "" ? null : Number(e.target.value))}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Switch checked={!!svc.hora_linear} onCheckedChange={(v) => updateServico(realIdx, "hora_linear", v)} />
-                  <Label className="text-xs">Hora Linear (vs Hora Tabela)</Label>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                     <Input
+                       type="number"
+                       placeholder="Ex: 350"
+                       value={svc.valor ?? ""}
+                       onChange={(e) => updateServico(realIdx, "valor", e.target.value === "" ? null : Number(e.target.value))}
+                     />
+                     <p className="mt-1 text-[11px] text-muted-foreground">Esse valor aparece na impressão da OS.</p>
+                   </div>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <Switch checked={!!svc.hora_linear} onCheckedChange={(v) => updateServico(realIdx, "hora_linear", v)} />
+                   <Label className="text-xs">Hora linear (vs. hora de tabela)</Label>
+                 </div>
+               </div>
+             );
+           })}
+         </div>
       )}
 
       {currentServicos.length === 0 && !showPicker && (
-        <p className="text-sm text-muted-foreground text-center py-4">Nenhum serviço de funilaria/pintura adicionado</p>
+        <p className="text-sm text-muted-foreground text-center py-4">Nenhum serviço de funilaria e pintura adicionado</p>
       )}
     </div>
   );

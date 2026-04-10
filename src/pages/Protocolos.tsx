@@ -257,6 +257,17 @@ const Protocolos = () => {
             .header { align-items: flex-start; border-bottom: 2px solid #111827; padding-bottom: 16px; margin-bottom: 16px; }
             .brand { display: flex; gap: 16px; align-items: flex-start; }
             .logo { width: 92px; height: 92px; border: 1px solid #d1d5db; border-radius: 8px; object-fit: contain; background: #fff; }
+            .foto-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .foto-card { border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden; }
+            .foto-card img { width: 100%; height: 180px; object-fit: cover; }
+            .foto-card .foto-info { padding: 8px 10px; font-size: 12px; }
+            .foto-card .foto-info strong { display: block; margin-bottom: 2px; }
+            .checklist-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+            .checklist-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; }
+            .checklist-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
+            .checklist-ok { background: #dcfce7; color: #16a34a; }
+            .checklist-pending { background: #fef3c7; color: #d97706; }
+            .termo-section { white-space: pre-wrap; font-family: monospace; font-size: 13px; border: 1px solid #d1d5db; border-radius: 8px; padding: 16px; }
             .title { font-size: 26px; font-weight: 700; margin: 0 0 10px; }
             .meta { text-align: right; min-width: 180px; }
             .meta strong { display: block; font-size: 14px; color: #374151; }

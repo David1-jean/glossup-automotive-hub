@@ -120,13 +120,12 @@ const Protocolos = () => {
 
     setServicosCadastradosError("");
 
-    const oid = profile.oficina_id;
     const [protRes, cliRes, veicRes, svcRes, propRes] = await Promise.all([
-      supabase.from("protocolos").select("*").eq("oficina_id", oid).order("created_at", { ascending: false }),
-      supabase.from("clientes").select("id, nome").eq("oficina_id", oid).order("nome"),
-      supabase.from("veiculos").select("id, modelo, placa").eq("oficina_id", oid).order("modelo"),
-      supabase.from("servicos").select("id, nome, oficina_id").or(`oficina_id.is.null,oficina_id.eq.${oid}`),
-      supabase.from("propostas").select("*, itens_proposta(*)").eq("oficina_id", oid).order("created_at", { ascending: false }),
+      supabase.from("protocolos").select("*").order("created_at", { ascending: false }),
+      supabase.from("clientes").select("id, nome").order("nome"),
+      supabase.from("veiculos").select("id, modelo, placa").order("modelo"),
+      supabase.from("servicos").select("id, nome, oficina_id").or(`oficina_id.is.null,oficina_id.eq.${profile.oficina_id}`),
+      supabase.from("propostas").select("*, itens_proposta(*)").order("created_at", { ascending: false }),
     ]);
 
     if (svcRes.error) {

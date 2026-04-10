@@ -66,11 +66,9 @@ const Clientes = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const fetchClientes = async () => {
-    if (!profile?.oficina_id) return;
     const { data, error } = await supabase
       .from("clientes")
       .select("*")
-      .eq("oficina_id", profile.oficina_id)
       .order("nome");
     if (error) {
       toast.error("Erro ao carregar clientes");
@@ -81,7 +79,7 @@ const Clientes = () => {
 
   useEffect(() => {
     fetchClientes();
-  }, [profile?.oficina_id]);
+  }, []);
 
   const filtered = clientes.filter((c) =>
     c.nome.toLowerCase().includes(search.toLowerCase())

@@ -51,14 +51,13 @@ const Financeiro = () => {
   const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
-    if (!profile?.oficina_id) return;
-    const { data } = await supabase.from("financeiro").select("*").eq("oficina_id", profile.oficina_id).order("data", { ascending: false });
+    const { data } = await supabase.from("financeiro").select("*").order("data", { ascending: false });
     if (data) setLancamentos(data);
   };
 
   useEffect(() => {
     fetchData();
-  }, [profile?.oficina_id]);
+  }, []);
 
   const filtered = lancamentos.filter((item) => {
     const query = search.toLowerCase();

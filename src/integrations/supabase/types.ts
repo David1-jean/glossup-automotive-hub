@@ -97,6 +97,7 @@ export type Database = {
           tipo_pessoa: string | null
           uf: string | null
           updated_at: string
+          user_id: string | null
           whatsapp: string | null
         }
         Insert: {
@@ -120,6 +121,7 @@ export type Database = {
           tipo_pessoa?: string | null
           uf?: string | null
           updated_at?: string
+          user_id?: string | null
           whatsapp?: string | null
         }
         Update: {
@@ -143,6 +145,7 @@ export type Database = {
           tipo_pessoa?: string | null
           uf?: string | null
           updated_at?: string
+          user_id?: string | null
           whatsapp?: string | null
         }
         Relationships: [

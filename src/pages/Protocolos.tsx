@@ -93,6 +93,7 @@ const Protocolos = () => {
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
   const [showPrintValues, setShowPrintValues] = useState(true);
+  const [showPrintTermo, setShowPrintTermo] = useState(false);
 
   // Sub-entity states
   const [servicos, setServicos] = useState<any[]>([]);

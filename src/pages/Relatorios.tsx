@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,6 +9,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const Relatorios = () => {
+  const { profile } = useAuth();
   const [protocolos, setProtocolos] = useState<any[]>([]);
   const [protocoloServicos, setProtocoloServicos] = useState<any[]>([]);
   const [protocoloPecas, setProtocoloPecas] = useState<any[]>([]);

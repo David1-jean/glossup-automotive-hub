@@ -46,7 +46,7 @@ export function AppLayout() {
       if (!profile?.oficina_id) return null;
       const { data, error } = await supabase
         .from('oficinas')
-        .select('nome_fantasia')
+        .select('nome')
         .eq('id', profile.oficina_id)
         .single();
       
@@ -86,7 +86,7 @@ export function AppLayout() {
 
                 <div className="flex items-center justify-between gap-3 lg:justify-end">
                   <div className="min-w-0 lg:text-right">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{oficina?.nome_fantasia || "Oficina"}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{oficina?.nome || "Oficina"}</p>
                     <p className="truncate text-sm font-medium text-slate-200">{pageTitle}</p>
                   </div>
                   <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-xl border border-white/10 bg-white/[0.06] text-slate-300 transition-colors hover:bg-white/10 hover:text-white">

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,6 +9,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const Relatorios = () => {
+  const { profile } = useAuth();
   const [protocolos, setProtocolos] = useState<any[]>([]);
   const [protocoloServicos, setProtocoloServicos] = useState<any[]>([]);
   const [protocoloPecas, setProtocoloPecas] = useState<any[]>([]);
@@ -20,12 +22,14 @@ const Relatorios = () => {
 
   useEffect(() => {
     const fetchAll = async () => {
+      if (!profile?.oficina_id) return;
+      const oid = profile.oficina_id;
       const [protRes, svcRes, pecRes, cliRes, veicRes] = await Promise.all([
-        supabase.from("protocolos").select("*").order("created_at", { ascending: false }),
+        supabase.from("protocolos").select("*").eq("oficina_id", oid).order("created_at", { ascending: false }),
         supabase.from("protocolo_servicos").select("*"),
         supabase.from("protocolo_pecas").select("*"),
-        supabase.from("clientes").select("id, nome"),
-        supabase.from("veiculos").select("id, modelo, placa"),
+        supabase.from("clientes").select("id, nome").eq("oficina_id", oid),
+        supabase.from("veiculos").select("id, modelo, placa").eq("oficina_id", oid),
       ]);
       if (protRes.data) setProtocolos(protRes.data);
       if (svcRes.data) setProtocoloServicos(svcRes.data);
@@ -34,7 +38,7 @@ const Relatorios = () => {
       if (veicRes.data) setVeiculos(veicRes.data);
     };
     fetchAll();
-  }, []);
+  }, [profile?.oficina_id]);
 
   const rows = useMemo(() => {
     return protocolos

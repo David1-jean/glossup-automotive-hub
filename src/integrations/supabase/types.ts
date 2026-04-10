@@ -89,7 +89,7 @@ export type Database = {
           nome: string
           numero: string | null
           observacoes: string | null
-          oficina_id: string
+          oficina_id: string | null
           origem: string | null
           rg: string | null
           rua: string | null
@@ -97,7 +97,7 @@ export type Database = {
           tipo_pessoa: string | null
           uf: string | null
           updated_at: string
-          user_id: string | null
+          user_id: string
           whatsapp: string | null
         }
         Insert: {
@@ -113,7 +113,7 @@ export type Database = {
           nome: string
           numero?: string | null
           observacoes?: string | null
-          oficina_id: string
+          oficina_id?: string | null
           origem?: string | null
           rg?: string | null
           rua?: string | null
@@ -121,7 +121,7 @@ export type Database = {
           tipo_pessoa?: string | null
           uf?: string | null
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
           whatsapp?: string | null
         }
         Update: {
@@ -137,7 +137,7 @@ export type Database = {
           nome?: string
           numero?: string | null
           observacoes?: string | null
-          oficina_id?: string
+          oficina_id?: string | null
           origem?: string | null
           rg?: string | null
           rua?: string | null
@@ -145,7 +145,7 @@ export type Database = {
           tipo_pessoa?: string | null
           uf?: string | null
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
           whatsapp?: string | null
         }
         Relationships: [

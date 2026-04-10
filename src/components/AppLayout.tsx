@@ -57,7 +57,7 @@ export function AppLayout() {
     enabled: !!profile?.oficina_id,
   });
 
-  const pageTitle = pageTitles[location.pathname] || "Gestao da oficina";
+  const pageTitle = pageTitles[location.pathname] || "Gestão da oficina";
   const headerMenuItems = roles.includes("admin_master")
     ? [...primaryMenuItems, { title: "Painel Master", url: "/admin" }]
     : primaryMenuItems;

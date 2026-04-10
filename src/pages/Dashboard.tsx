@@ -55,7 +55,7 @@ const pieConfig = {
 
 const barConfig = {
   entradas: { label: "Entradas", color: "hsl(142 71% 45%)" },
-  saidas: { label: "Saidas", color: "hsl(0 84% 60%)" },
+  saidas: { label: "Saídas", color: "hsl(0 84% 60%)" },
 };
 
 const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];

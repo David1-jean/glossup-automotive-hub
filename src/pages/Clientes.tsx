@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Archive } from "lucide-react";
 
 interface Cliente {
   id: string;
@@ -32,6 +32,7 @@ interface Cliente {
   cidade: string | null;
   uf: string | null;
   observacoes: string | null;
+  excluido_em: string | null;
 }
 
 const emptyForm = {
@@ -57,6 +58,8 @@ const emptyForm = {
 const Clientes = () => {
   const { profile } = useAuth();
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [clientesLixeira, setClientesLixeira] = useState<Cliente[]>([]);
+  const [showTrash, setShowTrash] = useState(false);
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Cliente | null>(null);
@@ -69,6 +72,7 @@ const Clientes = () => {
     const { data, error } = await supabase
       .from("clientes")
       .select("*")
+      .is("excluido_em", null)
       .order("nome");
     if (error) {
       toast.error("Erro ao carregar clientes");
@@ -77,11 +81,29 @@ const Clientes = () => {
     setClientes(data as Cliente[]);
   };
 
+  const fetchClientesLixeira = async () => {
+    const { data, error } = await supabase
+      .from("clientes")
+      .select("*")
+      .not("excluido_em", "is", null)
+      .order("excluido_em", { ascending: false });
+    if (error) {
+      toast.error("Erro ao carregar lixeira");
+      return;
+    }
+    setClientesLixeira(data as Cliente[]);
+  };
+
   useEffect(() => {
     fetchClientes();
+    fetchClientesLixeira();
   }, []);
 
   const filtered = clientes.filter((c) =>
+    c.nome.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredTrash = clientesLixeira.filter((c) =>
     c.nome.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -195,23 +217,48 @@ const Clientes = () => {
 
   const confirmDelete = async () => {
     if (!deleteId) return;
-    const { error } = await supabase.from("clientes").delete().eq("id", deleteId);
+    const { error } = await supabase
+      .from("clientes")
+      .update({ excluido_em: new Date().toISOString() })
+      .eq("id", deleteId);
     if (error) {
       toast.error("Erro ao excluir cliente");
     } else {
-      toast.success("Cliente excluído com sucesso");
+      toast.success("Cliente movido para lixeira");
       fetchClientes();
+      fetchClientesLixeira();
     }
     setDeleteId(null);
+  };
+
+  const restoreCliente = async (id: string) => {
+    const { error } = await supabase
+      .from("clientes")
+      .update({ excluido_em: null })
+      .eq("id", id);
+    if (error) {
+      toast.error("Erro ao restaurar cliente");
+    } else {
+      toast.success("Cliente restaurado");
+      fetchClientes();
+      fetchClientesLixeira();
+    }
   };
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">Clientes</h1>
-        <Button onClick={() => handleOpen()}>
-          <Plus className="h-4 w-4 mr-2" /> Adicionar
-        </Button>
+        <h1 className="text-2xl font-bold">{showTrash ? "Lixeira" : "Clientes"}</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowTrash(!showTrash)}>
+            <Archive className="h-4 w-4 mr-2" /> {showTrash ? "Clientes" : "Lixeira"} ({clientesLixeira.length})
+          </Button>
+          {!showTrash && (
+            <Button onClick={() => handleOpen()}>
+              <Plus className="h-4 w-4 mr-2" /> Adicionar
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="relative">
@@ -256,6 +303,42 @@ const Clientes = () => {
           <p className="text-center text-muted-foreground py-8">Nenhum resultado encontrado</p>
         )}
       </div>
+
+      {showTrash && (
+        <div className="glass-card overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-[#1E293B] text-white">
+              <tr className="border-b border-border">
+                <th className="text-left p-4 text-xs font-semibold uppercase">Nome</th>
+                <th className="text-left p-4 text-xs font-semibold uppercase">Celular</th>
+                <th className="text-left p-4 text-xs font-semibold uppercase">E-mail</th>
+                <th className="text-left p-4 text-xs font-semibold uppercase">Excluído em</th>
+                <th className="text-left p-4 text-xs font-semibold uppercase">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredTrash.map((item) => (
+                <tr key={item.id} className="border-b border-border/50 hover:bg-secondary/50 transition-colors">
+                  <td className="p-4 text-sm">{item.nome}</td>
+                  <td className="p-4 text-sm">{item.whatsapp || item.telefone || "—"}</td>
+                  <td className="p-4 text-sm">{item.email || "—"}</td>
+                  <td className="p-4 text-sm">
+                    {item.excluido_em ? new Date(item.excluido_em).toLocaleDateString("pt-BR") : "—"}
+                  </td>
+                  <td className="p-4 flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => restoreCliente(item.id)}>
+                      <Archive className="h-4 w-4 text-green-500" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filteredTrash.length === 0 && (
+            <p className="text-center text-muted-foreground py-8">Lixeira vazia</p>
+          )}
+        </div>
+      )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

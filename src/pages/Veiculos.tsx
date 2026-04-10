@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader2, ScanSearch } from "lucide-react";
 
 interface Veiculo {
   id: string;
@@ -45,6 +45,13 @@ const emptyForm = {
   observacoes: "",
 };
 
+interface ManualFields {
+  marca: boolean;
+  modelo: boolean;
+  ano_fabricacao: boolean;
+  ano_modelo: boolean;
+}
+
 const Veiculos = () => {
   const { profile } = useAuth();
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
@@ -57,11 +64,62 @@ const Veiculos = () => {
   const plateDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [plateLoading, setPlateLoading] = useState(false);
   const [plateError, setPlateError] = useState("");
+  const [manualFields, setManualFields] = useState<ManualFields>({
+    marca: false,
+    modelo: false,
+    ano_fabricacao: false,
+    ano_modelo: false,
+  });
   const lastSearchedPlate = useRef("");
+
+  const normalizePlate = (plate: string) => plate.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+
+  const searchVehicleByPlate = useCallback(async (plate: string, manual = false) => {
+    const clean = normalizePlate(plate);
+    if (clean.length !== 7) {
+      if (manual) setPlateError("Placa inválida. Necessário 7 caracteres.");
+      return;
+    }
+    if (clean === lastSearchedPlate.current && !manual) return;
+
+    lastSearchedPlate.current = clean;
+    setPlateLoading(true);
+    setPlateError("");
+
+    try {
+      const res = await fetch(`https://brasilapi.com.br/api/vehicles/v1/${clean}`);
+      const data = await res.json();
+      if (!res.ok || data.message || data.error) {
+        setPlateError("Placa não encontrada na base de dados");
+      } else {
+        const updates: Partial<typeof emptyForm> = {};
+        if (!manualFields.marca && data.marca) updates.marca = data.marca;
+        if (!manualFields.modelo && data.modelo) updates.modelo = data.modelo;
+        if (!manualFields.ano_fabricacao && data.ano) updates.ano_fabricacao = String(data.ano);
+        if (!manualFields.ano_modelo && data.anoModelo) updates.ano_modelo = String(data.anoModelo);
+        
+        setForm(f => ({ ...f, ...updates }));
+        
+        if (Object.keys(updates).length > 0) {
+          toast.success("Dados do veículo preenchidos automaticamente");
+        } else {
+          toast.info("Veículo encontrado, mas todos os campos já estavam preenchidos");
+        }
+      }
+    } catch {
+      setPlateError("Erro ao buscar placa. Tente novamente.");
+    } finally {
+      setPlateLoading(false);
+    }
+  }, [manualFields]);
+
+  const handleManualSearch = () => {
+    searchVehicleByPlate(form.placa, true);
+  };
 
   // Auto-lookup by plate
   useEffect(() => {
-    const clean = form.placa.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+    const clean = normalizePlate(form.placa);
     setPlateError("");
 
     if (clean.length !== 7) {
@@ -71,33 +129,11 @@ const Veiculos = () => {
     if (clean === lastSearchedPlate.current) return;
 
     if (plateDebounce.current) clearTimeout(plateDebounce.current);
-    plateDebounce.current = setTimeout(async () => {
-      lastSearchedPlate.current = clean;
-      setPlateLoading(true);
-      setPlateError("");
-      try {
-        const res = await fetch(`https://brasilapi.com.br/api/vehicles/v1/${clean}`);
-        const data = await res.json();
-        if (!res.ok || data.message || data.error) {
-          setPlateError("Placa não encontrada");
-        } else {
-          setForm(f => ({
-            ...f,
-            marca: data.marca || f.marca,
-            modelo: data.modelo || f.modelo,
-            ano_fabricacao: data.ano ? String(data.ano) : f.ano_fabricacao,
-            ano_modelo: data.anoModelo ? String(data.anoModelo) : f.ano_modelo,
-          }));
-          toast.success("Dados do veículo preenchidos automaticamente");
-        }
-      } catch {
-        setPlateError("Erro ao buscar placa");
-      } finally {
-        setPlateLoading(false);
-      }
+    plateDebounce.current = setTimeout(() => {
+      searchVehicleByPlate(form.placa, false);
     }, 500);
     return () => { if (plateDebounce.current) clearTimeout(plateDebounce.current); };
-  }, [form.placa]);
+  }, [form.placa, searchVehicleByPlate]);
 
   const fetchData = async () => {
     const [veicRes, cliRes] = await Promise.all([
@@ -134,9 +170,21 @@ const Veiculos = () => {
         motor: veiculo.motor || "",
         observacoes: veiculo.observacoes || "",
       });
+      setManualFields({
+        marca: true,
+        modelo: true,
+        ano_fabricacao: true,
+        ano_modelo: true,
+      });
     } else {
       setEditing(null);
       setForm(emptyForm);
+      setManualFields({
+        marca: false,
+        modelo: false,
+        ano_fabricacao: false,
+        ano_modelo: false,
+      });
     }
     setPlateError("");
     lastSearchedPlate.current = "";
@@ -235,20 +283,34 @@ const Veiculos = () => {
               </Select>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><Label>Marca</Label><Input value={form.marca} onChange={(e) => setForm({ ...form, marca: e.target.value })} /></div>
-              <div><Label>Modelo *</Label><Input value={form.modelo} onChange={(e) => setForm({ ...form, modelo: e.target.value })} /></div>
+              <div><Label>Marca</Label><Input value={form.marca} onChange={(e) => { setForm({ ...form, marca: e.target.value }); setManualFields(m => ({ ...m, marca: true })); }} /></div>
+              <div><Label>Modelo *</Label><Input value={form.modelo} onChange={(e) => { setForm({ ...form, modelo: e.target.value }); setManualFields(m => ({ ...m, modelo: true })); }} /></div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <Label>Placa</Label>
                 <div className="relative">
-                  <Input value={form.placa} onChange={(e) => setForm({ ...form, placa: e.target.value.toUpperCase() })} placeholder="ABC1D23" />
-                  {plateLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />}
+                  <Input 
+                    value={form.placa} 
+                    onChange={(e) => setForm({ ...form, placa: e.target.value.toUpperCase() })} 
+                    placeholder="ABC1D23" 
+                  />
+                  <Button 
+                    type="button"
+                    variant="ghost" 
+                    size="icon" 
+                    className="absolute right-0 top-0 h-full px-2" 
+                    onClick={handleManualSearch}
+                    disabled={plateLoading}
+                    title="Buscar veículo pela placa"
+                  >
+                    {plateLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanSearch className="h-4 w-4" />}
+                  </Button>
                 </div>
                 {plateError && <p className="text-xs text-destructive mt-1">{plateError}</p>}
               </div>
-              <div><Label>Ano Fabricação</Label><Input type="number" value={form.ano_fabricacao} onChange={(e) => setForm({ ...form, ano_fabricacao: e.target.value })} /></div>
-              <div><Label>Ano Modelo</Label><Input type="number" value={form.ano_modelo} onChange={(e) => setForm({ ...form, ano_modelo: e.target.value })} /></div>
+              <div><Label>Ano Fabricação</Label><Input type="number" value={form.ano_fabricacao} onChange={(e) => { setForm({ ...form, ano_fabricacao: e.target.value }); setManualFields(m => ({ ...m, ano_fabricacao: true })); }} /></div>
+              <div><Label>Ano Modelo</Label><Input type="number" value={form.ano_modelo} onChange={(e) => { setForm({ ...form, ano_modelo: e.target.value }); setManualFields(m => ({ ...m, ano_modelo: true })); }} /></div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div><Label>Cor</Label><Input value={form.cor} onChange={(e) => setForm({ ...form, cor: e.target.value })} /></div>

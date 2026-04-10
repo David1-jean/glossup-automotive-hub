@@ -64,6 +64,8 @@ interface VeiculoPrintData {
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value || 0);
 
+const hasValue = (value: unknown) => value !== null && value !== undefined && value !== "";
+
 const escapeHtml = (value: string) =>
   value
     .replace(/&/g, "&amp;")
@@ -202,8 +204,10 @@ const Protocolos = () => {
     const protocoloCode = getProtocoloCode(editing);
     const clienteDocumento = cliente?.cnpj || cliente?.cpf || "-";
     const clienteEndereco = buildAddress([cliente?.rua, cliente?.numero, cliente?.bairro, cliente?.cidade, cliente?.uf, cliente?.cep]);
-    const servicosTotal = servicos.reduce((sum, item) => sum + Number(item.valor || 0), 0);
-    const pecasTotal = pecas.reduce((sum, item) => sum + Number(item.valor || 0), 0);
+    const servicosComValor = servicos.filter((item) => hasValue(item.valor));
+    const pecasComValor = pecas.filter((item) => hasValue(item.valor));
+    const servicosTotal = servicosComValor.reduce((sum, item) => sum + Number(item.valor || 0), 0);
+    const pecasTotal = pecasComValor.reduce((sum, item) => sum + Number(item.valor || 0), 0);
     const totalGeral = servicosTotal + pecasTotal;
     const assinaturaData = form.data_entrada ? new Date(`${form.data_entrada}T00:00:00`).toLocaleDateString("pt-BR") : "-";
 
@@ -212,7 +216,7 @@ const Protocolos = () => {
           <tr>
             <td>${safeText(item.nome)}</td>
             <td style="text-align:center">${safeText(item.horas || 0)}</td>
-            ${showPrintValues ? `<td style="text-align:right">${safeText(formatCurrency(Number(item.valor || 0)))}</td>` : ""}
+            ${showPrintValues ? `<td style="text-align:right">${safeText(hasValue(item.valor) ? formatCurrency(Number(item.valor || 0)) : "-")}</td>` : ""}
           </tr>`).join("")
       : `<tr><td colspan="${showPrintValues ? 3 : 2}" class="empty">Nenhum serviço informado</td></tr>`;
 
@@ -220,7 +224,7 @@ const Protocolos = () => {
       ? pecas.map((item) => `
           <tr>
             <td>${safeText(item.nome)}</td>
-            ${showPrintValues ? `<td style="text-align:right">${safeText(formatCurrency(Number(item.valor || 0)))}</td>` : ""}
+            ${showPrintValues ? `<td style="text-align:right">${safeText(hasValue(item.valor) ? formatCurrency(Number(item.valor || 0)) : "-")}</td>` : ""}
           </tr>`).join("")
       : `<tr><td colspan="${showPrintValues ? 2 : 1}" class="empty">Nenhuma peça informada</td></tr>`;
 
@@ -347,9 +351,9 @@ const Protocolos = () => {
             ${showPrintValues ? `
               <div class="totals">
                 <div class="totals-box">
-                  <div class="totals-line"><span>Total serviços</span><strong>${safeText(formatCurrency(servicosTotal))}</strong></div>
-                  <div class="totals-line"><span>Total peças</span><strong>${safeText(formatCurrency(pecasTotal))}</strong></div>
-                  <div class="totals-line"><span>Total geral</span><strong>${safeText(formatCurrency(totalGeral))}</strong></div>
+                  <div class="totals-line"><span>Total serviços</span><strong>${safeText(servicosComValor.length > 0 ? formatCurrency(servicosTotal) : "-")}</strong></div>
+                  <div class="totals-line"><span>Total peças</span><strong>${safeText(pecasComValor.length > 0 ? formatCurrency(pecasTotal) : "-")}</strong></div>
+                  <div class="totals-line"><span>Total geral</span><strong>${safeText(servicosComValor.length > 0 || pecasComValor.length > 0 ? formatCurrency(totalGeral) : "-")}</strong></div>
                 </div>
               </div>` : ""}
 

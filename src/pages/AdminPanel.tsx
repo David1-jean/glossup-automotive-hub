@@ -114,25 +114,40 @@ const AdminPanel = () => {
     setAvatarUploading(true);
     try {
       const extension = file.name.includes(".") ? file.name.split(".").pop() : "png";
-      const path = `avatars/${user.id}/${Date.now()}.${extension}`;
-      const { data, error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      const path = `${user.id}/avatar.${extension}`;
 
-      if (error) {
-        toast.error("Erro ao enviar foto");
-        setAvatarUploading(false);
-        return;
+      const { error: uploadError } = await supabase.storage
+        .from("profile-avatars")
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) {
+        throw uploadError;
       }
 
-      const { data: publicUrl } = supabase.storage.from("avatars").getPublicUrl(data.path);
-      const avatarUrl = publicUrl.publicUrl;
+      const { data: publicUrl } = supabase.storage
+        .from("profile-avatars")
+        .getPublicUrl(path);
 
-      await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("id", user.id);
+      const avatarUrl = `${publicUrl.publicUrl}?t=${Date.now()}`;
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: avatarUrl })
+        .eq("id", user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
       setUserAvatarUrl(avatarUrl);
       toast.success("Foto de perfil atualizada");
-    } catch {
+    } catch (error) {
+      console.error("Admin avatar upload error:", error);
       toast.error("Erro ao processar foto");
+    } finally {
+      e.target.value = "";
+      setAvatarUploading(false);
     }
-    setAvatarUploading(false);
   };
 
   const handleRemoveAvatar = async () => {

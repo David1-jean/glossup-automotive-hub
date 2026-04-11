@@ -5,6 +5,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const respond = (success: boolean, payload: Record<string, unknown>) =>
+  new Response(JSON.stringify({ success, ...payload }), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -39,11 +45,36 @@ Deno.serve(async (req) => {
       email,
       password,
       email_confirm: true,
-      user_metadata: { full_name },
+      user_metadata: { full_name, oficina_id },
     });
-    if (createError) throw createError;
 
-    const userId = newUser.user.id;
+    if (createError) {
+      if ((createError as { code?: string }).code === "email_exists") {
+        return respond(false, {
+          error: "Este e-mail já está cadastrado. Use outro e-mail para o gerente ou redefina a senha do usuário existente.",
+          diagnostics: {
+            domain: "manager-creation",
+            error_stage: "create_auth_user",
+            error_code: "email_exists",
+            email,
+          },
+        });
+      }
+
+      throw createError;
+    }
+
+    const userId = newUser.user?.id;
+    if (!userId) {
+      return respond(false, {
+        error: "Não foi possível concluir a criação do gerente.",
+        diagnostics: {
+          domain: "manager-creation",
+          error_stage: "missing_user_id",
+          email,
+        },
+      });
+    }
 
     // Wait for trigger to fire, then ensure profile + role exist
     await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -94,14 +125,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ success: true, user_id: userId }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return respond(true, {
+      user_id: userId,
     });
   } catch (error: any) {
     console.error("create-user error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return respond(false, {
+      error: error?.message || "Erro interno ao criar gerente",
+      diagnostics: {
+        domain: "manager-creation",
+        error_stage: "unexpected_exception",
+      },
     });
   }
 });

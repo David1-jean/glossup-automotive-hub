@@ -32,7 +32,9 @@ Deno.serve(async (req) => {
 
     const { email, password, full_name, oficina_id, role } = await req.json();
 
-    // Create user via admin API (no session swap)
+    if (!email || !password) throw new Error("E-mail e senha são obrigatórios");
+
+    // Create user via admin API
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -43,32 +45,52 @@ Deno.serve(async (req) => {
 
     const userId = newUser.user.id;
 
-    // Wait a moment for the trigger to create the profile
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Wait for trigger to fire, then ensure profile + role exist
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    // Upsert profile to ensure oficina_id is set
+    // Upsert profile (in case trigger didn't fire or was slow)
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
       .upsert({
         id: userId,
         oficina_id,
-        full_name,
+        full_name: full_name || "",
         email,
       }, { onConflict: "id" });
 
     if (profileError) {
       console.error("Profile upsert error:", profileError);
+      throw new Error("Erro ao criar perfil do usuário: " + profileError.message);
     }
 
-    // Update role from default 'consultor' to requested role
-    if (role && role !== "consultor") {
+    // Set the correct role
+    const targetRole = role || "consultor";
+
+    // Try to update existing role first (created by trigger)
+    const { data: existingRole } = await supabaseAdmin
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existingRole) {
+      // Update existing role
+      if (targetRole !== "consultor") {
+        const { error: roleError } = await supabaseAdmin
+          .from("user_roles")
+          .update({ role: targetRole })
+          .eq("user_id", userId);
+        if (roleError) {
+          console.error("Role update error:", roleError);
+        }
+      }
+    } else {
+      // Insert role (trigger didn't create one)
       const { error: roleError } = await supabaseAdmin
         .from("user_roles")
-        .update({ role })
-        .eq("user_id", userId);
-
+        .insert({ user_id: userId, role: targetRole });
       if (roleError) {
-        console.error("Role update error:", roleError);
+        console.error("Role insert error:", roleError);
       }
     }
 

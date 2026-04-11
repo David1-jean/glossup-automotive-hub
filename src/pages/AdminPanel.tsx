@@ -415,9 +415,9 @@ const AdminPanel = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={7} className="text-center p-8 text-muted-foreground">Carregando...</td></tr>
+                  <tr><td colSpan={8} className="text-center p-8 text-muted-foreground">Carregando...</td></tr>
                 ) : oficinas.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center p-8 text-muted-foreground">Nenhuma oficina cadastrada</td></tr>
+                  <tr><td colSpan={8} className="text-center p-8 text-muted-foreground">Nenhuma oficina cadastrada</td></tr>
                 ) : oficinas.map(o => (
                   <tr key={o.id} className="border-b border-border/50 hover:bg-muted/5">
                     <td className="p-4 text-foreground font-medium">{o.nome}</td>
@@ -435,6 +435,11 @@ const AdminPanel = () => {
                     </td>
                     <td className="p-4 text-muted-foreground">
                       {o.data_vencimento ? new Date(o.data_vencimento).toLocaleDateString("pt-BR") : "—"}
+                    </td>
+                    <td className="p-4 text-muted-foreground">
+                      {o.status_assinatura === "ativa" && o.data_vencimento
+                        ? new Date(new Date(o.data_vencimento).getTime() - 30 * 24 * 60 * 60 * 1000).toLocaleDateString("pt-BR")
+                        : "—"}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">

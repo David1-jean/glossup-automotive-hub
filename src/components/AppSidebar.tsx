@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, LogOut, Crown, User,
+  LayoutDashboard, LogOut, Crown, User, HelpCircle,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
@@ -102,6 +102,14 @@ export function AppSidebar() {
 
         <div className="border-t border-border/70 p-2">
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink to="/ajuda" className="rounded-xl text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground" activeClassName="bg-primary/12 text-primary font-medium shadow-sm ring-1 ring-primary/20">
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  {!collapsed && <span>Ajuda</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton onClick={handleLogout} className="rounded-xl text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />

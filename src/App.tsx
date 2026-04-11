@@ -20,6 +20,7 @@ import Estoque from "./pages/Estoque";
 import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
 import AdminPanel from "./pages/AdminPanel";
+import Ajuda from "./pages/Ajuda";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

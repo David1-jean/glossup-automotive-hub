@@ -409,6 +409,7 @@ const AdminPanel = () => {
                   <th className="text-left p-4 text-muted-foreground font-medium">Status</th>
                   <th className="text-left p-4 text-muted-foreground font-medium">Início</th>
                   <th className="text-left p-4 text-muted-foreground font-medium">Vencimento</th>
+                  <th className="text-left p-4 text-muted-foreground font-medium">Último Pagamento</th>
                   <th className="text-left p-4 text-muted-foreground font-medium">Ações</th>
                 </tr>
               </thead>

@@ -56,7 +56,7 @@ const emptyForm: OficinFormData = {
   cep: "", rua: "", numero: "", bairro: "", cidade: "", uf: "",
   plano: "trial", status_assinatura: "trial",
   data_inicio: new Date().toISOString().split("T")[0],
-  data_vencimento: "",
+  data_vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   gerente_nome: "", gerente_email: "", gerente_senha: "",
 };
 
@@ -66,7 +66,7 @@ const statusBadge = (status: string) => {
   const map: Record<string, string> = {
     ativa: "bg-green-500/20 text-green-400 border-green-500/30",
     inativa: "bg-red-500/20 text-red-400 border-red-500/30",
-    trial: "bg-primary/20 text-primary border-primary/30",
+    trial: "bg-orange-500/20 text-orange-400 border-orange-500/30",
   };
   return map[status] || map.trial;
 };
@@ -409,14 +409,15 @@ const AdminPanel = () => {
                   <th className="text-left p-4 text-muted-foreground font-medium">Status</th>
                   <th className="text-left p-4 text-muted-foreground font-medium">Início</th>
                   <th className="text-left p-4 text-muted-foreground font-medium">Vencimento</th>
+                  <th className="text-left p-4 text-muted-foreground font-medium">Último Pagamento</th>
                   <th className="text-left p-4 text-muted-foreground font-medium">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={7} className="text-center p-8 text-muted-foreground">Carregando...</td></tr>
+                  <tr><td colSpan={8} className="text-center p-8 text-muted-foreground">Carregando...</td></tr>
                 ) : oficinas.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center p-8 text-muted-foreground">Nenhuma oficina cadastrada</td></tr>
+                  <tr><td colSpan={8} className="text-center p-8 text-muted-foreground">Nenhuma oficina cadastrada</td></tr>
                 ) : oficinas.map(o => (
                   <tr key={o.id} className="border-b border-border/50 hover:bg-muted/5">
                     <td className="p-4 text-foreground font-medium">{o.nome}</td>
@@ -434,6 +435,11 @@ const AdminPanel = () => {
                     </td>
                     <td className="p-4 text-muted-foreground">
                       {o.data_vencimento ? new Date(o.data_vencimento).toLocaleDateString("pt-BR") : "—"}
+                    </td>
+                    <td className="p-4 text-muted-foreground">
+                      {o.status_assinatura === "ativa" && o.data_vencimento
+                        ? new Date(new Date(o.data_vencimento).getTime() - 30 * 24 * 60 * 60 * 1000).toLocaleDateString("pt-BR")
+                        : "—"}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">

@@ -22,6 +22,7 @@ const pageTitles: Record<string, string> = {
   "/relatorios": "Relatórios",
   "/configuracoes": "Configurações",
   "/admin": "Painel Master",
+  "/ajuda": "Ajuda",
 };
 
 const primaryMenuItems = [
@@ -34,6 +35,7 @@ const primaryMenuItems = [
   { title: "Protocolos", url: "/protocolos" },
   { title: "Relatórios", url: "/relatorios" },
   { title: "Configurações", url: "/configuracoes" },
+  { title: "Ajuda", url: "/ajuda" },
 ];
 
 export function AppLayout() {

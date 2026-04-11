@@ -56,7 +56,7 @@ const emptyForm: OficinFormData = {
   cep: "", rua: "", numero: "", bairro: "", cidade: "", uf: "",
   plano: "trial", status_assinatura: "trial",
   data_inicio: new Date().toISOString().split("T")[0],
-  data_vencimento: "",
+  data_vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   gerente_nome: "", gerente_email: "", gerente_senha: "",
 };
 
@@ -66,7 +66,7 @@ const statusBadge = (status: string) => {
   const map: Record<string, string> = {
     ativa: "bg-green-500/20 text-green-400 border-green-500/30",
     inativa: "bg-red-500/20 text-red-400 border-red-500/30",
-    trial: "bg-primary/20 text-primary border-primary/30",
+    trial: "bg-orange-500/20 text-orange-400 border-orange-500/30",
   };
   return map[status] || map.trial;
 };

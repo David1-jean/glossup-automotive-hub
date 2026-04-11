@@ -274,7 +274,6 @@ const AdminPanel = () => {
       toast.success("Oficina criada");
 
       if (form.gerente_email && form.gerente_senha && newOficina) {
-        const { data: session } = await supabase.auth.getSession();
         const res = await supabase.functions.invoke("create-user", {
           body: {
             email: form.gerente_email,
@@ -284,8 +283,9 @@ const AdminPanel = () => {
             role: "gerente",
           },
         });
-        if (res.error || res.data?.error) {
-          toast.error("Oficina criada, mas erro ao criar gerente: " + (res.data?.error || res.error?.message));
+        if (res.error || !res.data?.success) {
+          const errorMessage = res.data?.error || res.error?.message || "Erro desconhecido ao criar gerente";
+          toast.error("Oficina criada, mas erro ao criar gerente: " + errorMessage);
         } else {
           toast.success("Gerente criado com sucesso");
         }

@@ -231,8 +231,8 @@ const AdminPanel = () => {
         bairro: parts[2] || "", cidade: parts[3] || "", uf: parts[4] || "",
         plano: oficina.plano,
       status_assinatura: oficina.status_assinatura,
-      data_inicio: oficina.data_inicio ? oficina.data_inicio.split("T")[0] : "",
-      data_vencimento: oficina.data_vencimento ? oficina.data_vencimento.split("T")[0] : "",
+      data_inicio: oficina.data_inicio ? new Date(oficina.data_inicio).toISOString().slice(0, 16) : "",
+      data_vencimento: oficina.data_vencimento ? new Date(oficina.data_vencimento).toISOString().slice(0, 16) : "",
       gerente_nome: "", gerente_email: "", gerente_senha: "",
     });
     setDialogOpen(true);
@@ -449,7 +449,7 @@ const AdminPanel = () => {
                       {o.data_inicio ? new Date(o.data_inicio).toLocaleDateString("pt-BR") : "—"}
                     </td>
                     <td className="p-4 text-muted-foreground">
-                      {o.data_vencimento ? new Date(o.data_vencimento).toLocaleDateString("pt-BR") : "—"}
+                      {o.data_vencimento ? new Date(o.data_vencimento).toLocaleString("pt-BR") : "—"}
                     </td>
                     <td className="p-4 text-muted-foreground">
                       {o.status_assinatura === "ativa" && o.data_vencimento
@@ -591,8 +591,8 @@ const AdminPanel = () => {
               <Input type="date" value={form.data_inicio} onChange={e => setForm(f => ({ ...f, data_inicio: e.target.value }))} />
             </div>
             <div className="space-y-2">
-              <Label>Data de Vencimento</Label>
-              <Input type="date" value={form.data_vencimento} onChange={e => setForm(f => ({ ...f, data_vencimento: e.target.value }))} />
+              <Label>Data e Hora de Vencimento</Label>
+              <Input type="datetime-local" value={form.data_vencimento} onChange={e => setForm(f => ({ ...f, data_vencimento: e.target.value }))} />
             </div>
 
             {!editingId && (
@@ -639,7 +639,7 @@ const AdminPanel = () => {
               <div className="flex justify-between"><span className="text-muted-foreground">Plano:</span><Badge variant="outline" className="uppercase text-xs">{selectedOficina.plano}</Badge></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Status:</span><Badge className={statusBadge(selectedOficina.status_assinatura)}>{selectedOficina.status_assinatura}</Badge></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Início:</span><span>{selectedOficina.data_inicio ? new Date(selectedOficina.data_inicio).toLocaleDateString("pt-BR") : "—"}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Vencimento:</span><span>{selectedOficina.data_vencimento ? new Date(selectedOficina.data_vencimento).toLocaleDateString("pt-BR") : "—"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Vencimento:</span><span>{selectedOficina.data_vencimento ? new Date(selectedOficina.data_vencimento).toLocaleString("pt-BR") : "—"}</span></div>
             </div>
           )}
         </DialogContent>

@@ -55,8 +55,8 @@ const emptyForm: OficinFormData = {
   nome: "", cnpj: "", email: "", telefone: "", whatsapp: "", logo_url: "",
   cep: "", rua: "", numero: "", bairro: "", cidade: "", uf: "",
   plano: "trial", status_assinatura: "trial",
-  data_inicio: new Date().toISOString().split("T")[0],
-  data_vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+  data_inicio: new Date().toISOString().slice(0, 16),
+  data_vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
   gerente_nome: "", gerente_email: "", gerente_senha: "",
 };
 

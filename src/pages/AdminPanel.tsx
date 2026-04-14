@@ -314,7 +314,7 @@ const AdminPanel = () => {
       plano: form.plano,
       status_assinatura: form.status_assinatura,
       data_inicio: form.data_inicio || null,
-      data_vencimento: form.data_vencimento || null,
+      data_vencimento: form.data_vencimento ? new Date(form.data_vencimento).toISOString() : null,
       ativa: form.status_assinatura === "ativa",
     };
 

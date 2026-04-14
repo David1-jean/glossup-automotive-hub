@@ -51,6 +51,11 @@ interface OficinFormData {
   gerente_senha: string;
 }
 
+const toLocalISOString = (d: Date) => {
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
 const emptyForm: OficinFormData = {
   nome: "", cnpj: "", email: "", telefone: "", whatsapp: "", logo_url: "",
   cep: "", rua: "", numero: "", bairro: "", cidade: "", uf: "",

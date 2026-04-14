@@ -446,14 +446,14 @@ const AdminPanel = () => {
                       </Badge>
                     </td>
                     <td className="p-4 text-muted-foreground">
-                      {o.data_inicio ? new Date(o.data_inicio).toLocaleDateString("pt-BR") : "—"}
+                      {o.data_inicio ? new Date(o.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—"}
                     </td>
                     <td className="p-4 text-muted-foreground">
-                      {o.data_vencimento ? new Date(o.data_vencimento).toLocaleString("pt-BR") : "—"}
+                      {o.data_vencimento ? new Date(o.data_vencimento).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—"}
                     </td>
                     <td className="p-4 text-muted-foreground">
                       {o.status_assinatura === "ativa" && o.data_vencimento
-                        ? new Date(new Date(o.data_vencimento).getTime() - 30 * 24 * 60 * 60 * 1000).toLocaleDateString("pt-BR")
+                        ? new Date(new Date(o.data_vencimento).getTime() - 30 * 24 * 60 * 60 * 1000).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })
                         : "—"}
                     </td>
                     <td className="p-4">
@@ -638,8 +638,8 @@ const AdminPanel = () => {
               <div className="flex justify-between"><span className="text-muted-foreground">Endereço:</span><span>{selectedOficina.endereco || "—"}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Plano:</span><Badge variant="outline" className="uppercase text-xs">{selectedOficina.plano}</Badge></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Status:</span><Badge className={statusBadge(selectedOficina.status_assinatura)}>{selectedOficina.status_assinatura}</Badge></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Início:</span><span>{selectedOficina.data_inicio ? new Date(selectedOficina.data_inicio).toLocaleDateString("pt-BR") : "—"}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Vencimento:</span><span>{selectedOficina.data_vencimento ? new Date(selectedOficina.data_vencimento).toLocaleString("pt-BR") : "—"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Início:</span><span>{selectedOficina.data_inicio ? new Date(selectedOficina.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Vencimento:</span><span>{selectedOficina.data_vencimento ? new Date(selectedOficina.data_vencimento).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—"}</span></div>
             </div>
           )}
         </DialogContent>

@@ -51,12 +51,17 @@ interface OficinFormData {
   gerente_senha: string;
 }
 
+const toLocalISOString = (d: Date) => {
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
 const emptyForm: OficinFormData = {
   nome: "", cnpj: "", email: "", telefone: "", whatsapp: "", logo_url: "",
   cep: "", rua: "", numero: "", bairro: "", cidade: "", uf: "",
   plano: "trial", status_assinatura: "trial",
-  data_inicio: new Date().toISOString().slice(0, 16),
-  data_vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
+  data_inicio: toLocalISOString(new Date()),
+  data_vencimento: toLocalISOString(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
   gerente_nome: "", gerente_email: "", gerente_senha: "",
 };
 
@@ -231,8 +236,8 @@ const AdminPanel = () => {
         bairro: parts[2] || "", cidade: parts[3] || "", uf: parts[4] || "",
         plano: oficina.plano,
       status_assinatura: oficina.status_assinatura,
-      data_inicio: oficina.data_inicio ? new Date(oficina.data_inicio).toISOString().slice(0, 16) : "",
-      data_vencimento: oficina.data_vencimento ? new Date(oficina.data_vencimento).toISOString().slice(0, 16) : "",
+      data_inicio: oficina.data_inicio ? toLocalISOString(new Date(oficina.data_inicio)) : "",
+      data_vencimento: oficina.data_vencimento ? toLocalISOString(new Date(oficina.data_vencimento)) : "",
       gerente_nome: "", gerente_email: "", gerente_senha: "",
     });
     setDialogOpen(true);

@@ -266,7 +266,7 @@ const AdminPanel = () => {
       plano: oficina.plano,
       status_assinatura: oficina.status_assinatura,
       data_inicio: oficina.data_inicio ? new Date(oficina.data_inicio).toISOString().slice(0, 16) : "",
-      data_vencimento: oficina.data_vencimento ? oficina.data_vencimento.slice(0, 16) : "",
+      data_vencimento: oficina.data_vencimento ? new Date(oficina.data_vencimento).toISOString().slice(0, 16) : "",
       gerente_nome: "",
       gerente_email: "",
       gerente_senha: "",
@@ -525,9 +525,7 @@ const AdminPanel = () => {
                         {o.data_inicio ? new Date(o.data_inicio).toLocaleDateString("pt-BR") : "—"}
                       </td>
                       <td className="p-4 text-muted-foreground">
-                        {o.data_vencimento
-                          ? new Date(o.data_vencimento + "Z").toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })
-                          : "—"}
+                        {o.data_vencimento ? new Date(o.data_vencimento).toLocaleString("pt-BR") : "—"}
                       </td>
                       <td className="p-4 text-muted-foreground">
                         {o.status_assinatura === "ativa" && o.data_vencimento

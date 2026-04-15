@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -249,47 +249,50 @@ const Protocolos = () => {
           <meta charset="UTF-8" />
           <title>Ordem de Serviço ${safeText(protocoloCode)}</title>
           <style>
-            @page { size: A4; margin: 12mm; }
+            @page { size: A4; margin: 8mm; }
             * { box-sizing: border-box; }
-            body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #111827; background: #fff; }
-            .page { width: 100%; }
-            .header, .row, .signature { display: flex; justify-content: space-between; gap: 20px; }
-            .header { align-items: flex-start; border-bottom: 2px solid #111827; padding-bottom: 16px; margin-bottom: 16px; }
-            .brand { display: flex; gap: 16px; align-items: flex-start; }
-            .logo { width: 92px; height: 92px; border: 1px solid #d1d5db; border-radius: 8px; object-fit: contain; background: #fff; }
-            .foto-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .foto-card { border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden; }
-            .foto-card img { width: 100%; height: 180px; object-fit: cover; }
-            .foto-card .foto-info { padding: 8px 10px; font-size: 12px; }
-            .foto-card .foto-info strong { display: block; margin-bottom: 2px; }
-            .checklist-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
-            .checklist-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; }
-            .checklist-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
+            body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #111827; background: #fff; line-height: 1.3; }
+            .page { width: 100%; font-size: 12px; }
+            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #111827; padding-bottom: 8px; margin-bottom: 10px; }
+            .brand { display: flex; gap: 10px; align-items: center; font-size: 10px; }
+            .brand-text { display: flex; flex-direction: column; gap: 1px; }
+            .logo { width: 56px; height: 56px; border: 1px solid #d1d5db; border-radius: 6px; object-fit: contain; background: #fff; }
+            .title { font-size: 16px; font-weight: 700; margin: 0; }
+            .meta { text-align: right; min-width: 150px; }
+            .meta strong { display: block; font-size: 11px; color: #374151; text-transform: uppercase; }
+            .meta span { display: block; font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+            .meta div { font-size: 11px; }
+            .section { margin-bottom: 10px; page-break-inside: avoid; }
+            .section h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 4px; color: #374151; font-weight: bold; border-bottom: 1px solid #d1d5db; padding-bottom: 2px; }
+            .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 6px; }
+            .field { border: 1px solid #e5e7eb; border-radius: 4px; padding: 4px 6px; min-height: 36px; }
+            .field-label { display: block; font-size: 9px; text-transform: uppercase; color: #6b7280; margin-bottom: 1px; }
+            .field-value { font-size: 11px; font-weight: 600; word-break: break-word; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+            th, td { border: 1px solid #d1d5db; padding: 4px 6px; font-size: 11px; vertical-align: middle; }
+            th { background: #f3f4f6; text-align: left; }
+            .empty { text-align: center; color: #6b7280; padding: 6px; }
+            .totals { margin-top: 6px; display: flex; justify-content: flex-end; page-break-inside: avoid; }
+            .totals-box { min-width: 200px; border: 1px solid #111827; border-radius: 6px; padding: 6px 10px; }
+            .totals-line { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 3px; font-size: 11px; }
+            .totals-line:last-child { margin-bottom: 0; font-size: 13px; font-weight: 700; }
+            .foto-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+            .foto-card { border: 1px solid #d1d5db; border-radius: 4px; overflow: hidden; page-break-inside: avoid; }
+            .foto-card img { width: 100%; height: 110px; object-fit: cover; }
+            .foto-card .foto-info { padding: 4px 6px; font-size: 10px; }
+            .foto-card .foto-info strong { display: block; margin-bottom: 1px; }
+            .checklist-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; text-transform: uppercase; }
+            .checklist-item { display: flex; align-items: center; justify-content: space-between; padding: 3px 6px; border: 1px solid #e5e7eb; border-radius: 4px; font-size: 9px; font-weight: 600; }
+            .checklist-badge { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 8px; }
             .checklist-ok { background: #dcfce7; color: #16a34a; }
             .checklist-pending { background: #fef3c7; color: #d97706; }
-            .termo-section { white-space: pre-wrap; font-family: monospace; font-size: 13px; border: 1px solid #d1d5db; border-radius: 8px; padding: 16px; }
-            .title { font-size: 26px; font-weight: 700; margin: 0 0 10px; }
-            .meta { text-align: right; min-width: 180px; }
-            .meta strong { display: block; font-size: 14px; color: #374151; }
-            .meta span { display: block; font-size: 20px; font-weight: 700; margin-bottom: 10px; }
-            .section { margin-bottom: 18px; }
-            .section h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 10px; color: #374151; }
-            .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
-            .field { border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px; min-height: 56px; }
-            .field-label { display: block; font-size: 11px; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
-            .field-value { font-size: 14px; font-weight: 600; word-break: break-word; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #d1d5db; padding: 10px; font-size: 13px; vertical-align: top; }
-            th { background: #f3f4f6; text-align: left; }
-            .empty { text-align: center; color: #6b7280; }
-            .totals { margin-top: 12px; display: flex; justify-content: flex-end; }
-            .totals-box { min-width: 260px; border: 1px solid #111827; border-radius: 8px; padding: 12px 14px; }
-            .totals-line { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-size: 14px; }
-            .totals-line:last-child { margin-bottom: 0; font-size: 16px; font-weight: 700; }
-            .signature { align-items: flex-end; margin-top: 28px; }
-            .signature-box { flex: 1; }
-            .signature-line { border-top: 1px solid #111827; padding-top: 8px; font-size: 13px; }
-            .footer-note { margin-top: 18px; font-size: 12px; color: #4b5563; }
+            .termo-section { white-space: pre-wrap; font-family: monospace; font-size: 10px; border: 1px solid #d1d5db; border-radius: 4px; padding: 8px; }
+            .signature { display: flex; justify-content: space-between; gap: 40px; align-items: flex-end; margin-top: 24px; page-break-inside: avoid; }
+            .signature-box { flex: 1; text-align: center; }
+            .signature-line { border-top: 1px solid #111827; padding-top: 4px; font-size: 11px; }
+            .footer-note { margin-top: 8px; font-size: 10px; color: #4b5563; display: flex; justify-content: space-between; border-top: 1px solid #e5e7eb; padding-top: 6px; page-break-inside: avoid; }
+            .linhas-obs { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; margin-bottom: 8px; }
+            .linha { border-bottom: 1px solid #cbd5e1; height: 12px; }
             @media print {
               body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             }
@@ -300,30 +303,27 @@ const Protocolos = () => {
             <div class="header">
               <div class="brand">
                 ${oficina.logo_url ? `<img class="logo" src="${escapeHtml(oficina.logo_url)}" alt="Logo da oficina" />` : ""}
-                <div>
+                <div class="brand-text">
                   <h1 class="title">${safeText(oficina.nome)}</h1>
-                  <div>${safeText(oficina.cnpj)}</div>
+                  <div>${safeText(oficina.cnpj)} | ${safeText(oficina.telefone)} ${oficina.whatsapp ? `| WA: ${safeText(oficina.whatsapp)}` : ""}</div>
                   <div>${safeText(oficina.endereco)}</div>
-                  <div>Telefone: ${safeText(oficina.telefone)}</div>
-                  <div>WhatsApp: ${safeText(oficina.whatsapp)}</div>
                 </div>
               </div>
               <div class="meta">
                 <strong>Ordem de Serviço</strong>
                 <span>#${safeText(protocoloCode)}</span>
-                <strong>Data de abertura</strong>
-                <div>${safeText(form.data_entrada ? new Date(`${form.data_entrada}T00:00:00`).toLocaleDateString("pt-BR") : "-")}</div>
+                <div>Data: ${safeText(form.data_entrada ? new Date(`${form.data_entrada}T00:00:00`).toLocaleDateString("pt-BR") : "-")}</div>
               </div>
             </div>
 
             <section class="section">
               <h2>Dados do cliente</h2>
               <div class="grid">
-                <div class="field"><span class="field-label">Nome</span><div class="field-value">${safeText(cliente?.nome || getClienteNome(form.cliente_id))}</div></div>
+                <div class="field" style="grid-column: span 2;"><span class="field-label">Nome</span><div class="field-value">${safeText(cliente?.nome || getClienteNome(form.cliente_id))}</div></div>
                 <div class="field"><span class="field-label">CPF/CNPJ</span><div class="field-value">${safeText(clienteDocumento)}</div></div>
                 <div class="field"><span class="field-label">WhatsApp</span><div class="field-value">${safeText(cliente?.whatsapp)}</div></div>
                 <div class="field"><span class="field-label">Telefone</span><div class="field-value">${safeText(cliente?.telefone)}</div></div>
-                <div class="field" style="grid-column: 1 / -1;"><span class="field-label">Endereço</span><div class="field-value">${safeText(clienteEndereco)}</div></div>
+                <div class="field" style="grid-column: span 3;"><span class="field-label">Endereço</span><div class="field-value">${safeText(clienteEndereco)}</div></div>
               </div>
             </section>
 
@@ -335,9 +335,9 @@ const Protocolos = () => {
                 <div class="field"><span class="field-label">Placa</span><div class="field-value">${safeText(veiculo?.placa)}</div></div>
                 <div class="field"><span class="field-label">Ano</span><div class="field-value">${safeText([veiculo?.ano_fabricacao, veiculo?.ano_modelo].filter(Boolean).join("/") || "-")}</div></div>
                 <div class="field"><span class="field-label">Cor</span><div class="field-value">${safeText(veiculo?.cor)}</div></div>
-                <div class="field"><span class="field-label">Combustível</span><div class="field-value">${safeText(veiculo?.combustivel)}</div></div>
-                <div class="field"><span class="field-label">Chassi</span><div class="field-value">${safeText(veiculo?.chassi)}</div></div>
                 <div class="field"><span class="field-label">Quilometragem</span><div class="field-value">${safeText(form.km)}</div></div>
+                <div class="field"><span class="field-label">Combustível</span><div class="field-value">${safeText(veiculo?.combustivel)}</div></div>
+                <div class="field" style="grid-column: span 2;"><span class="field-label">Chassi</span><div class="field-value">${safeText(veiculo?.chassi)}</div></div>
               </div>
             </section>
 
@@ -347,8 +347,8 @@ const Protocolos = () => {
                 <thead>
                   <tr>
                     <th>Serviço</th>
-                    <th style="width: 110px; text-align:center;">Horas</th>
-                    ${showPrintValues ? '<th style="width: 150px; text-align:right;">Valor</th>' : ""}
+                    <th style="width: 80px; text-align:center;">Horas</th>
+                    ${showPrintValues ? '<th style="width: 120px; text-align:right;">Valor</th>' : ""}
                   </tr>
                 </thead>
                 <tbody>${serviceRows}</tbody>
@@ -361,7 +361,7 @@ const Protocolos = () => {
                 <thead>
                   <tr>
                     <th>Peça</th>
-                    ${showPrintValues ? '<th style="width: 150px; text-align:right;">Valor</th>' : ""}
+                    ${showPrintValues ? '<th style="width: 120px; text-align:right;">Valor</th>' : ""}
                   </tr>
                 </thead>
                 <tbody>${pecasRows}</tbody>
@@ -377,6 +377,19 @@ const Protocolos = () => {
                 </div>
               </div>` : ""}
 
+            ${checklist.length > 0 ? `
+            <section class="section">
+              <h2>Checklist de vistoria</h2>
+              <div class="checklist-grid">
+                ${checklist.map((c) => `
+                  <div class="checklist-item">
+                    <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${safeText(c.item)}</span>
+                    <span class="checklist-badge ${c.condicao === 'ok' ? 'checklist-ok' : 'checklist-pending'}">${c.condicao === 'ok' ? 'OK' : 'PENDENTE'}</span>
+                  </div>
+                `).join("")}
+              </div>
+            </section>` : ""}
+
             ${fotos.length > 0 ? `
             <section class="section">
               <h2>Registro fotográfico</h2>
@@ -385,7 +398,7 @@ const Protocolos = () => {
                   <div class="foto-card">
                     <img src="${escapeHtml(f.url)}" alt="${safeText(f.peca)}" crossorigin="anonymous" />
                     <div class="foto-info">
-                      ${f.peca ? `<strong>Peça: ${safeText(f.peca)}</strong>` : ""}
+                      ${f.peca ? `<strong>${safeText(f.peca)}</strong>` : ""}
                       ${f.observacoes ? `<span>${safeText(f.observacoes)}</span>` : ""}
                     </div>
                   </div>
@@ -393,36 +406,33 @@ const Protocolos = () => {
               </div>
             </section>` : ""}
 
-            ${checklist.length > 0 ? `
             <section class="section">
-              <h2>Checklist de vistoria</h2>
-              <div class="checklist-grid">
-                ${checklist.map((c) => `
-                  <div class="checklist-item">
-                    <span style="flex:1">${safeText(c.item)}</span>
-                    <span class="checklist-badge ${c.condicao === 'ok' ? 'checklist-ok' : 'checklist-pending'}">${c.condicao === 'ok' ? 'OK' : 'Pendente'}</span>
-                  </div>
-                `).join("")}
+              <h2>Observações / Anotações Gerais</h2>
+              <div class="linhas-obs">
+                <div class="linha"></div>
+                <div class="linha"></div>
+                <div class="linha"></div>
+                <div class="linha"></div>
               </div>
-            </section>` : ""}
-
-            <section class="section footer-note">
-              <div>Previsão de entrega: ${safeText(form.previsao_entrega ? new Date(`${form.previsao_entrega}T00:00:00`).toLocaleDateString("pt-BR") : "-")}${form.hora_entrega ? ` às ${safeText(form.hora_entrega)}` : ""}</div>
-              <div>Forma de pagamento: ${safeText(form.forma_pagamento)}</div>
             </section>
 
             <div class="signature">
-              <div class="signature-box">
+              <div class="signature-box" style="flex: 2;">
                 <div class="signature-line">Assinatura do cliente: ${safeText(cliente?.nome || getClienteNome(form.cliente_id))}</div>
               </div>
-              <div class="signature-box" style="max-width: 220px;">
+              <div class="signature-box" style="flex: 1;">
                 <div class="signature-line">Data: ${safeText(assinaturaData)}</div>
               </div>
             </div>
 
+            <section class="section footer-note">
+              <div><strong>Previsão de entrega:</strong> ${safeText(form.previsao_entrega ? new Date(`${form.previsao_entrega}T00:00:00`).toLocaleDateString("pt-BR") : "-")}${form.hora_entrega ? ` às ${safeText(form.hora_entrega)}` : ""}</div>
+              <div><strong>Forma de pagamento:</strong> ${safeText(form.forma_pagamento)}</div>
+            </section>
+
             ${showPrintTermo && form.termo_autorizacao ? `
             <div style="page-break-before: always;"></div>
-            <section class="section" style="margin-top: 24px;">
+            <section class="section" style="margin-top: 16px;">
               <h2>Termo de Autorização de Serviço</h2>
               <div class="termo-section">${escapeHtml(form.termo_autorizacao)}</div>
             </section>` : ""}

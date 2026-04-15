@@ -20,6 +20,7 @@ import Estoque from "./pages/Estoque";
 import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
 import AdminPanel from "./pages/AdminPanel";
+import Ajuda from "./pages/Ajuda";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/estoque" element={<Estoque />} />
               <Route path="/relatorios" element={<Relatorios />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="/ajuda" element={<Ajuda />} />
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin_master"><AdminPanel /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />

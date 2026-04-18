@@ -379,6 +379,38 @@ export type Database = {
           },
         ]
       }
+      proposta_imagens: {
+        Row: {
+          created_at: string
+          id: string
+          proposta_id: string
+          storage_path: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          proposta_id: string
+          storage_path?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          proposta_id?: string
+          storage_path?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposta_imagens_proposta_id_fkey"
+            columns: ["proposta_id"]
+            isOneToOne: false
+            referencedRelation: "propostas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       propostas: {
         Row: {
           cliente_id: string | null

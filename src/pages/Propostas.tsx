@@ -544,7 +544,6 @@ const Propostas = () => {
                 variant="outline"
                 onClick={handleEnviarWhatsApp}
                 disabled={sendingWa}
-                className="text-green-700 border-green-600 hover:bg-green-50"
               >
                 <MessageCircle className="h-4 w-4 mr-1" /> {sendingWa ? "Preparando..." : "Enviar no WhatsApp"}
               </Button>
